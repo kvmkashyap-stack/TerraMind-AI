@@ -1,0 +1,41 @@
+# Core Backend Framework
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+python-dotenv>=1.0.1
+requests>=2.31.0
+httpx>=0.27.0
+python-multipart>=0.0.9
+
+# LangChain & LangGraph Orchestration
+langchain>=0.1.14
+langchain-community>=0.0.31
+langchain-core>=0.1.40
+langchain-openai>=0.1.1       # Compatible with Moonshot / Kimi K3 API endpoint
+langgraph>=0.0.32             # Orchestration & agentic graph state machine
+
+# Web Search & Web Scraping Content Extraction
+tavily-python>=0.3.3          # Tavily search API integration
+trafilatura>=1.10.0           # Trafilatura web content extractor for reliable grounding
+pypdf>=4.1.0                  # PDF Document text extractor for RAG ingestion
+
+# Vector Database & RAG
+faiss-cpu>=1.8.0
+chromadb>=0.4.24
+
+# Geospatial & Satellite Processing Engine (Sentinel-2 / Copernicus)
+geopandas>=0.14.3
+shapely>=2.0.3
+rasterio>=1.3.9
+pyproj>=3.6.1
+numpy>=1.26.4
+pystac-client>=0.7.6
+planetary-computer>=1.0.0
+cdse-api>=0.1.0               # Copernicus Data Space Ecosystem API
+
+# PDF Report Generation
+reportlab>=4.1.0
+
+# Utility & Testing
+pytest>=8.1.1
