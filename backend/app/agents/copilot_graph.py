@@ -351,12 +351,23 @@ def _generate_dynamic_response(query: str, is_casual: bool, meta: dict, schemes:
             return "I'm Dr. Arjun Mehta, Senior Conservation Intelligence Analyst with over 25 years of field and policy experience across FSI, MoEFCC, and CWC. I'm here to provide explainable environmental intelligence."
         return "I'm doing well, thanks for asking! What aspect of resource conservation or site telemetry can I help you explore?"
 
-    # Extract target site details (use query place if specified)
+    # Dynamic target site/location extraction from query
     target_site = meta.get("title", "this location")
-    for place in ["krs dam", "krishna raja sagar", "almatti dam", "sariska", "panna", "tungabhadra", "loktak", "chilika", "aravalli", "mettur"]:
-        if place in q_lower:
-            target_site = place.title()
-            break
+    query_clean = re.sub(r'^(what|how|why|which|where|when|is|can|should|could|tell me|explain)\s+', '', q_lower, flags=re.IGNORECASE)
+    
+    # Match places after 'for', 'of', 'at', or ending in park/reserve/dam/lake/sanctuary
+    for pattern in [
+        r'for ([a-z0-9\s]+?)(?: to|\?|$)',
+        r'of ([a-z0-9\s]+?)(?: now| today|\?|$)',
+        r'at ([a-z0-9\s]+?)(?: now| today|\?|$)',
+        r'([a-z0-9\s]+ (?:park|reserve|dam|lake|sanctuary|forest|river|wetland))'
+    ]:
+        match = re.search(pattern, query_clean, re.IGNORECASE)
+        if match:
+            extracted = match.group(1).strip().title()
+            if len(extracted) > 2 and extracted.lower() not in ["the", "a", "an", "this", "that"]:
+                target_site = extracted
+                break
 
     # Extract scraped web search citations & build bold Markdown links
     citation_links = []
