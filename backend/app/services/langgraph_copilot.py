@@ -72,6 +72,7 @@ class LangGraphCopilotService:
             "project_metadata": project_metadata,
             "retrieved_schemes": [],
             "tavily_search_results": [],
+            "scraped_web_content": [],
             "final_answer": "",
             "recommended_schemes": [],
             "suggested_technical_solution": "",

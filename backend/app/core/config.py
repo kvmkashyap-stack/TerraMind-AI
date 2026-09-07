@@ -6,6 +6,9 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # LLM & Search Configuration
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     MOONSHOT_API_KEY: str = os.getenv("MOONSHOT_API_KEY", "mock-moonshot-key")
     MOONSHOT_BASE_URL: str = os.getenv("MOONSHOT_BASE_URL", "https://api.moonshot.cn/v1")
     KIMI_MODEL_NAME: str = os.getenv("KIMI_MODEL_NAME", "moonshot-v1-8k")

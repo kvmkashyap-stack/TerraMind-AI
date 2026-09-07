@@ -12,3 +12,4 @@ class AgentState(TypedDict):
     suggested_technical_solution: str
     iteration_count: int
     is_casual: Optional[bool]
+    scraped_web_content: Optional[List[Dict[str, Any]]]
