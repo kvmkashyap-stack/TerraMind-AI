@@ -246,45 +246,18 @@ def _build_grounded_web_response(query: str, is_casual: bool, scraped: list) -> 
 
     parts = []
 
-    # Directly answer Jim Corbett National Park query
-    if "jim corbett" in q_lower or "corbett" in q_lower:
-        parts.append(
-            "### Current State of Jim Corbett National Park\n"
-            "Jim Corbett National Park currently holds India's highest tiger population density, boasting over **260 tigers** within its core and buffer zones. "
-            "However, the park faces key conservation challenges including severe habitat fragmentation along the Ramganga river corridor, tourist vehicle congestion, "
-            "and seasonal human-wildlife conflicts near surrounding village fringes."
-        )
-        parts.append(
-            "### Strategic Measures to Improve Corbett's Protection\n"
-            "To enhance the ecological health and sustainability of Jim Corbett National Park, the following key strategies should be implemented:\n\n"
-            "1. **Strengthen Wildlife Corridor Connectivity**: Restore and safeguard the critical corridor linking Corbett to Rajaji National Park to allow unhindered movement of tigers and Asian elephants.\n"
-            "2. **Strict Eco-Sensitive Zone (ESZ) Regulation**: Enforce strict noise, waste, and building regulations on commercial resorts operating along the Kosi River buffer.\n"
-            "3. **Smart Anti-Poaching Telemetry & Drone Surveillance**: Deploy night-vision thermal drones and AI-powered camera traps along vulnerable boundary vectors.\n"
-            "4. **Ramganga Catchment & River Health**: Implement strict desilting and water-quality monitoring along the Ramganga River basin to preserve aquatic habitats for gharials and mahseer fish.\n"
-            "5. **Community Conflict Mitigation**: Install solar-powered fencing around bordering villages and establish rapid-response teams for human-wildlife encounters."
-        )
-    elif "krs dam" in q_lower or "krishna raja sagar" in q_lower:
-        parts.append(
-            "### Current Condition of Krishna Raja Sagar (KRS) Dam\n"
-            "The KRS Dam currently faces water storage fluctuations driven by seasonal rainfall variations in the Cauvery catchment basin. "
-            "Key operational priorities focus on bathymetric siltation monitoring, maintaining minimum dead storage levels, and ensuring regulated outflow for downstream agriculture and drinking water."
-        )
-        parts.append(
-            "### Key Corrective Strategies\n"
-            "1. **Desilting & Dredging Drives**: Execute bathymetric surveys and target suction dredging of reservoir silt under the DRIP Phase II framework.\n"
-            "2. **Catchment Afforestation**: Plant deep-rooted native vegetation along upstream catchment rims to reduce soil runoff into the reservoir."
-        )
+    # Grounded response dynamically built from scraped web content for ANY user query
+    if extracted_facts:
+        parts.append(f"Based on real-time field data & web intelligence for **\"{q}\"**:\n")
+        for fact in extracted_facts[:3]:
+            clean_fact = fact.strip()
+            if not clean_fact.endswith("."):
+                clean_fact += "."
+            parts.append(f"• {clean_fact}")
     else:
-        # Grounded response based on scraped web content
-        parts.append(f"Here is the detailed information regarding **\"{q}\"** based on current conservation data:")
-        if extracted_facts:
-            parts.append(f"{extracted_facts[0]}")
-            if len(extracted_facts) > 1:
-                parts.append(f"{extracted_facts[1]}")
-        else:
-            parts.append(
-                f"Continuous satellite telemetry and field observations are active to monitor habitat density, water extent, and ecological stability for this query."
-            )
+        parts.append(
+            f"Regarding **\"{q}\"**, current satellite telemetry and field observations are active to monitor habitat density, water extent, and ecological stability."
+        )
 
     parts.append(f"\n🔗 **Official Web Citations:**\n{citations_str}")
 

@@ -1,12 +1,12 @@
 import os
 from typing import Dict, Any, List
 from fastapi import UploadFile
-from app.agents.copilot_graph import SCHEME_VECTOR_STORE
+DOCUMENT_KNOWLEDGE_STORE = []
 
 class DocumentIngestionService:
     """
     Ingests custom PDF, TXT, or Markdown policy documents uploaded by the user,
-    extracts text content, and indexes them into the RAG scheme vector database.
+    extracts text content, and indexes them into the knowledge database.
     """
 
     @staticmethod
@@ -30,7 +30,7 @@ class DocumentIngestionService:
         else:
             text_content = content_bytes.decode("utf-8", errors="ignore")
 
-        # Create structured RAG document entry
+        # Create structured document entry
         doc_entry = {
             "scheme_name": f"Custom Upload: {filename}",
             "authority": "Uploaded Domain Policy / Document",
@@ -39,16 +39,16 @@ class DocumentIngestionService:
             "url": f"/docs/uploads/{filename}"
         }
 
-        # Index into live RAG Vector Store
-        SCHEME_VECTOR_STORE.append(doc_entry)
+        # Index into live Knowledge Store
+        DOCUMENT_KNOWLEDGE_STORE.append(doc_entry)
 
         return {
             "status": "success",
             "filename": filename,
             "bytes_processed": len(content_bytes),
             "characters_indexed": len(text_content),
-            "message": f"Successfully ingested and indexed '{filename}' into the RAG Vector Knowledge Base!",
-            "total_documents_in_vector_store": len(SCHEME_VECTOR_STORE)
+            "message": f"Successfully ingested and indexed '{filename}' into the Knowledge Base!",
+            "total_documents_in_vector_store": len(DOCUMENT_KNOWLEDGE_STORE)
         }
 
 document_ingestion_service = DocumentIngestionService()
