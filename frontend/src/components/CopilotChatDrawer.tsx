@@ -88,11 +88,36 @@ export default function CopilotChatDrawer({
     }
   };
 
-  // Simple Markdown Formatter
+  // Enhanced Markdown Formatter with Link & Bold Support
   const renderFormattedText = (text: string) => {
     return text.split("\n").map((line, lIdx) => {
-      const parts = line.split(/(\*\*.*?\*\*)/g);
+      const regex = /(\[.*?\]\(https?:\/\/[^\s\)]+\)|\*\*.*?\*\*)/g;
+      const parts = line.split(regex);
+
       const formattedLine = parts.map((part, pIdx) => {
+        if (!part) return null;
+
+        // Match Markdown Link: [label](url)
+        const linkMatch = part.match(/^\[(.*?)\]\((https?:\/\/[^\s\)]+)\)$/);
+        if (linkMatch) {
+          const rawLabel = linkMatch[1];
+          const url = linkMatch[2];
+          const cleanLabel = rawLabel.replace(/^\*\*/, "").replace(/\*\*$/, "");
+          return (
+            <a
+              key={pIdx}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-extrabold text-slate-900 underline hover:text-indigo-600 transition-colors inline-flex items-center gap-0.5 mx-0.5 cursor-pointer"
+            >
+              <span>{cleanLabel}</span>
+              <span className="text-[10px] text-indigo-600">↗</span>
+            </a>
+          );
+        }
+
+        // Match Bold: **text**
         if (part.startsWith("**") && part.endsWith("**")) {
           return (
             <strong key={pIdx} className="font-bold text-slate-900">
@@ -100,6 +125,7 @@ export default function CopilotChatDrawer({
             </strong>
           );
         }
+
         return part;
       });
 
@@ -195,24 +221,6 @@ export default function CopilotChatDrawer({
                   }`}
                 >
                   <div className="font-sans leading-relaxed">{renderFormattedText(m.text)}</div>
-
-                  {m.responseData?.recommended_schemes && m.responseData.recommended_schemes.length > 0 && (
-                    <div className="pt-3 mt-2 border-t border-[#D5E2D6] space-y-2 text-[11px]">
-                      <span className="font-bold text-[#14281D] flex items-center space-x-1.5">
-                        <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
-                        <span>Applicable Government Schemes:</span>
-                      </span>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {m.responseData.recommended_schemes.map((s, sIdx) => (
-                          <div key={sIdx} className="bg-[#F6F8F3] p-2.5 rounded-xl border border-[#D5E2D6]">
-                            <div className="font-extrabold text-[#14281D]">{s.scheme_name}</div>
-                            <div className="text-[10px] text-indigo-700 font-mono font-bold mt-0.5">{s.authority}</div>
-                            <div className="text-stone-600 text-[10.5px] mt-1 leading-snug">{s.relevant_clause}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
                 {m.sender === "user" && (
                   <div className="w-7 h-7 rounded-xl bg-emerald-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs mt-1">
