@@ -157,7 +157,7 @@ async def retrieve_scheme_rag_node(state: AgentState) -> Dict[str, Any]:
 
 
 async def tavily_search_node(state: AgentState) -> Dict[str, Any]:
-    """Search Tavily for real-time web context & scrape page body using Trafilatura."""
+    """Search Tavily for real-time web context & extract body content via Trafilatura."""
     if state.get("is_casual"):
         return {"tavily_search_results": [], "scraped_web_content": []}
 
@@ -168,34 +168,36 @@ async def tavily_search_node(state: AgentState) -> Dict[str, Any]:
 
     if tavily_key and tavily_key != "mock-tavily-key":
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with httpx.AsyncClient(timeout=4.0) as client:
                 res = await client.post(
                     "https://api.tavily.com/search",
-                    json={"api_key": tavily_key, "query": f"India conservation MoEFCC FSI {query}", "max_results": 3},
+                    json={"api_key": tavily_key, "query": f"India conservation water dam {query}", "max_results": 3},
                 )
                 if res.status_code == 200:
                     results = res.json().get("results", [])
                     for r in results:
                         u = r.get("url")
+                        content_snippet = r.get("content", "")
+                        title = r.get("title", "")
                         if u:
                             urls.append(u)
-                            content_snippet = r.get("content", "")
-                            # Use Trafilatura to extract full web article content if available
                             try:
-                                downloaded = trafilatura.fetch_url(u)
-                                if downloaded:
-                                    extracted_text = trafilatura.extract(downloaded)
-                                    if extracted_text:
+                                page_res = await client.get(u, follow_redirects=True, timeout=2.5)
+                                if page_res.status_code == 200:
+                                    extracted = trafilatura.extract(page_res.text)
+                                    if extracted:
                                         scraped_content.append({
                                             "url": u,
-                                            "title": r.get("title", ""),
+                                            "title": title,
                                             "snippet": content_snippet,
-                                            "full_text": extracted_text[:1200]
+                                            "full_text": extracted[:1000]
                                         })
                                     else:
-                                        scraped_content.append({"url": u, "snippet": content_snippet})
+                                        scraped_content.append({"url": u, "title": title, "snippet": content_snippet})
+                                else:
+                                    scraped_content.append({"url": u, "title": title, "snippet": content_snippet})
                             except Exception:
-                                scraped_content.append({"url": u, "snippet": content_snippet})
+                                scraped_content.append({"url": u, "title": title, "snippet": content_snippet})
         except Exception:
             pass
 
@@ -349,8 +351,12 @@ def _generate_dynamic_response(query: str, is_casual: bool, meta: dict, schemes:
             return "I'm Dr. Arjun Mehta, Senior Conservation Intelligence Analyst with over 25 years of field and policy experience across FSI, MoEFCC, and CWC. I'm here to provide explainable environmental intelligence."
         return "I'm doing well, thanks for asking! What aspect of resource conservation or site telemetry can I help you explore?"
 
-    # Extract target site details
-    site_name = meta.get("title", "this location")
+    # Extract target site details (use query place if specified)
+    target_site = meta.get("title", "this location")
+    for place in ["krs dam", "krishna raja sagar", "almatti dam", "sariska", "panna", "tungabhadra", "loktak", "chilika", "aravalli", "mettur"]:
+        if place in q_lower:
+            target_site = place.title()
+            break
 
     # Extract scraped web search citations & build bold Markdown links
     citation_links = []
@@ -363,7 +369,11 @@ def _generate_dynamic_response(query: str, is_casual: bool, meta: dict, schemes:
             if u:
                 citation_links.append(f"[**{t}**]({u})")
             if snip:
-                web_snippets.append(snip[:220])
+                clean_snip = snip.replace("\n", " ").strip()
+                if clean_snip and not clean_snip.startswith("Copied"):
+                    web_snippets.append(clean_snip[:280])
+                elif len(snip) > 10:
+                    web_snippets.append(snip.replace("Copied", "").strip()[:280])
 
     if not citation_links:
         citation_links = [
@@ -379,34 +389,30 @@ def _generate_dynamic_response(query: str, is_casual: bool, meta: dict, schemes:
     # Dynamic direct answer tailored specifically to the user's question
     if any(w in q_lower for w in ["improving", "compare", "trajectory", "baseline", "condition", "status", "recovering"]):
         parts.append(
-            f"Regarding **{site_name}**, satellite telemetry and historical comparisons show that ecological parameters are making steady recovery progress relative to baseline data. "
-            f"Multi-spectral imagery indicates that vegetation canopy density and water surface extents have stabilized following ongoing conservation interventions."
+            f"Regarding **{target_site}**, satellite telemetry and real-time environmental monitoring show key water surface and ecological metrics relative to historical baselines."
         )
     elif any(w in q_lower for w in ["water", "lake", "dam", "reservoir", "silt", "capacity"]):
         parts.append(
-            f"For **{site_name}**, surface water monitoring indicates manageable storage levels. "
-            f"Regular desilting drives and upstream catchment protection remain critical to maintaining long-term water extent and preventing storage loss."
+            f"For **{target_site}**, surface water monitoring indicates storage capacity and catchment inflow tracking."
         )
     elif any(w in q_lower for w in ["forest", "tree", "canopy", "logging", "smuggling", "encroach"]):
         parts.append(
-            f"Forest canopy and vegetation health at **{site_name}** are closely tracked using Sentinel-2 NDVI telemetry. "
-            f"Maintaining dense buffer zones and enforcing anti-encroachment patrols ensure the long-term protection of the habitat corridor."
+            f"Forest canopy and vegetation health at **{target_site}** are closely tracked using Sentinel-2 NDVI telemetry."
         )
     elif any(w in q_lower for w in ["scheme", "fund", "grant", "policy", "apply"]):
         if schemes:
             top = schemes[0]
             parts.append(
-                f"For targeted interventions at **{site_name}**, central schemes such as **{top['scheme_name']}** ({top['authority']}) "
+                f"For targeted interventions at **{target_site}**, central schemes such as **{top['scheme_name']}** ({top['authority']}) "
                 f"provide structured grant support for watershed protection, desilting, and habitat afforestation."
             )
         else:
             parts.append(
-                f"Key government frameworks supporting sites like **{site_name}** include CAMPA for afforestation and Jal Shakti Abhiyan for water conservation."
+                f"Key government frameworks supporting sites like **{target_site}** include CAMPA for afforestation and Jal Shakti Abhiyan for water conservation."
             )
     else:
         parts.append(
-            f"Regarding **{site_name}**, current satellite observations and environmental data indicate active monitoring. "
-            f"Continuous multi-spectral analysis helps identify potential environmental risks early and supports effective site management."
+            f"Regarding **{target_site}**, current satellite observations and environmental data indicate active monitoring."
         )
 
     if web_snippets:
