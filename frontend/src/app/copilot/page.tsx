@@ -1,11 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import CopilotChatDrawer from "../../components/CopilotChatDrawer";
+import { fetchMapProjects, ProjectMapHover } from "../../services/api";
 
 export default function CopilotPage() {
+  const [projects, setProjects] = useState<ProjectMapHover[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("IND-RAJ-FOR-RED-01");
+
+  useEffect(() => {
+    fetchMapProjects()
+      .then((res) => {
+        setProjects(res);
+        if (res.length > 0) setSelectedId(res[0].project_id);
+      })
+      .catch(console.error);
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col bg-[#FBFBF8] text-[#14281D]">
       <Header />
@@ -23,7 +36,16 @@ export default function CopilotPage() {
           </p>
         </div>
 
-        <CopilotChatDrawer projectId="IND-KAR-02" />
+        <CopilotChatDrawer
+          projectId={selectedId}
+          projects={projects}
+          selectedProjectId={selectedId}
+          onSelectProject={(id) => setSelectedId(id)}
+          onAddDynamicProject={(newProj) => {
+            setProjects((prev) => [newProj, ...prev.filter((p) => p.project_id !== newProj.project_id)]);
+            setSelectedId(newProj.project_id);
+          }}
+        />
       </main>
 
       <Footer />

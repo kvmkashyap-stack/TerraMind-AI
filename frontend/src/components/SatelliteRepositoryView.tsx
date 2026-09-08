@@ -78,29 +78,32 @@ export default function SatelliteRepositoryView({
   const featuredSatelliteUrl = getEsriSatelliteUrl(siteLat, siteLng, 0.035, 1200, 800);
   const thumbnailDeltas = [0.020, 0.045, 0.080];
 
-  const activeData: SatelliteDataRepository = data || {
-    project_id: selectedProjectId || "IND-KAR-DAM-01",
-    project_title: selectedProj?.title || "Multi-Spectral Satellite Data Analysis",
-    coordinates: { latitude: siteLat, longitude: siteLng },
-    total_images_captured: 14,
-    latest_observation_date: "2026-03-01",
-    images: [
-      {
-        image_id: `${selectedProjectId || 'SAT'}-PASS-01`,
-        project_id: selectedProjectId || "IND-KAR-DAM-01",
-        acquisition_date: "2026-03-01",
-        satellite_source: "Sentinel-2B MSI (10m Resolution)",
-        cloud_cover_percentage: 1.2,
-        resolution_meters: 10,
-        raw_rgb_url: featuredSatelliteUrl,
-        ndvi_composite_url: featuredSatelliteUrl,
-        ndwi_composite_url: featuredSatelliteUrl,
-        ndbi_composite_url: featuredSatelliteUrl,
-        processed_status: "Calibrated & Processed",
-        vegetation_coverage_pct: selectedProj?.land_cover?.vegetation_coverage_pct ?? 48.0,
-        water_body_coverage_pct: selectedProj?.land_cover?.water_coverage_pct ?? 30.0,
-        builtup_coverage_pct: selectedProj?.land_cover?.urban_builtup_pct ?? 8.0,
-      },
+  const activeData: SatelliteDataRepository =
+    data && data.project_id === selectedProjectId
+      ? data
+      : {
+          project_id: selectedProjectId || "IND-RAJ-FOR-RED-01",
+          project_title: selectedProj?.title || "Multi-Spectral Satellite Data Analysis",
+          coordinates: { latitude: siteLat, longitude: siteLng },
+          total_images_captured: 14,
+          latest_observation_date: "2026-03-01",
+          images: [
+            {
+              image_id: `${selectedProjectId || 'SAT'}-PASS-01`,
+              project_id: selectedProjectId || "IND-RAJ-FOR-RED-01",
+              acquisition_date: "2026-03-01",
+              satellite_source: "Sentinel-2B MSI (10m Resolution)",
+              cloud_cover_percentage: 1.2,
+              resolution_meters: 10,
+              raw_rgb_url: featuredSatelliteUrl,
+              ndvi_composite_url: featuredSatelliteUrl,
+              ndwi_composite_url: featuredSatelliteUrl,
+              ndbi_composite_url: featuredSatelliteUrl,
+              processed_status: "Calibrated & Processed",
+              vegetation_coverage_pct: selectedProj?.land_cover?.vegetation_coverage_pct ?? 48.0,
+              water_body_coverage_pct: selectedProj?.land_cover?.water_coverage_pct ?? 30.0,
+              builtup_coverage_pct: selectedProj?.land_cover?.urban_builtup_pct ?? 8.0,
+            },
       {
         image_id: `${selectedProjectId || 'SAT'}-PASS-02`,
         project_id: selectedProjectId || "IND-KAR-DAM-01",

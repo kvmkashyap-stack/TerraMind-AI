@@ -4,14 +4,26 @@ import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import SatelliteRepositoryView from "../../components/SatelliteRepositoryView";
-import { fetchSatelliteRepository, SatelliteDataRepository } from "../../services/api";
+import { fetchSatelliteRepository, fetchMapProjects, SatelliteDataRepository, ProjectMapHover } from "../../services/api";
 
 export default function ReportsPage() {
+  const [projects, setProjects] = useState<ProjectMapHover[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("IND-RAJ-FOR-RED-01");
   const [satelliteData, setSatelliteData] = useState<SatelliteDataRepository | null>(null);
 
   useEffect(() => {
-    fetchSatelliteRepository("IND-KAR-02").then(setSatelliteData).catch(console.error);
+    fetchMapProjects()
+      .then((res) => {
+        setProjects(res);
+        if (res.length > 0) setSelectedId(res[0].project_id);
+      })
+      .catch(console.error);
   }, []);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    fetchSatelliteRepository(selectedId).then(setSatelliteData).catch(console.error);
+  }, [selectedId]);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FBFBF8] text-[#14281D]">
@@ -30,7 +42,16 @@ export default function ReportsPage() {
           </p>
         </div>
 
-        <SatelliteRepositoryView data={satelliteData} />
+        <SatelliteRepositoryView
+          data={satelliteData}
+          projects={projects}
+          selectedProjectId={selectedId}
+          onSelectProject={(id) => setSelectedId(id)}
+          onAddDynamicProject={(newProj) => {
+            setProjects((prev) => [newProj, ...prev.filter((p) => p.project_id !== newProj.project_id)]);
+            setSelectedId(newProj.project_id);
+          }}
+        />
       </main>
 
       <Footer />
