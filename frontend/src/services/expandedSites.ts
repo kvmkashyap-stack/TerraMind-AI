@@ -802,7 +802,69 @@ export const EXPANDED_PAN_INDIA_SITES: ProjectMapHover[] = [
     }
   },
 
-  // 🌿 VEGETATION BELTS & GREEN COVER SITES
+  // 🌿 VEGETATION BELTS & GREEN COVER SITES (ULTRA-DENSE FORESTS & CANOPY CORRIDORS)
+  {
+    project_id: "IND-AGUMBE-VEG-01",
+    title: "Agumbe Dense Rainforest & Evergreen Vegetation Canopy Belt",
+    intervention_type: "Dense Evergreen Rainforest Canopy Protection",
+    location_name: "Agumbe, Western Ghats, Shivamogga, Karnataka",
+    coordinates: { lat: 13.5074, lng: 75.0934 },
+    health_status: "Green",
+    allocated_funds_inr: 88000000.0,
+    expended_funds_inr: 79000000.0,
+    budget_sufficiency: "Sufficient",
+    smuggling_alert_active: false,
+    land_cover: {
+      vegetation_coverage_pct: 94.0,
+      water_coverage_pct: 4.0,
+      urban_builtup_pct: 0.5,
+      barren_land_pct: 1.5
+    },
+    baseline_ndwi: 0.35,
+    current_ndwi: 0.48,
+    baseline_ndvi: 0.78,
+    current_ndvi: 0.94,
+    estimated_cost: {
+      corrective_action_required: "High-Density Tropical Rainforest Bio-Shield & Continuous Evergreen Canopy Corridor Protection",
+      estimated_cost_inr: 350000.0,
+      cost_breakdown: [
+        "Continuous evergreen canopy bio-wall extension (₹2,20,000)",
+        "Rainforest canopy watchtower & drone patrol (₹1,30,000)"
+      ],
+      funding_scheme_recommended: "Green India Mission (GIM) Evergreen Bio-Shield Grant"
+    }
+  },
+  {
+    project_id: "IND-SILENT-VEG-01",
+    title: "Silent Valley Virgin Evergreen Rainforest & Canopy Corridor",
+    intervention_type: "Tropical Rainforest Canopy Protection",
+    location_name: "Palakkad, Nilgiri Biosphere, Kerala",
+    coordinates: { lat: 11.0827, lng: 76.4442 },
+    health_status: "Green",
+    allocated_funds_inr: 92000000.0,
+    expended_funds_inr: 85000000.0,
+    budget_sufficiency: "Sufficient",
+    smuggling_alert_active: false,
+    land_cover: {
+      vegetation_coverage_pct: 96.0,
+      water_coverage_pct: 3.0,
+      urban_builtup_pct: 0.2,
+      barren_land_pct: 0.8
+    },
+    baseline_ndwi: 0.38,
+    current_ndwi: 0.52,
+    baseline_ndvi: 0.82,
+    current_ndvi: 0.96,
+    estimated_cost: {
+      corrective_action_required: "Pristine Rainforest Bio-Shield Maintenance & Buffer Zone Patrol",
+      estimated_cost_inr: 290000.0,
+      cost_breakdown: [
+        "Rainforest canopy boundary fencing (₹1,80,000)",
+        "Micro-climate sensor network deployment (₹1,10,000)"
+      ],
+      funding_scheme_recommended: "CAMPA Tropical Bio-Shield Fund"
+    }
+  },
   {
     project_id: "IND-KAR-VEG-01",
     title: "Western Ghats Eco-Corridor & Canopy Shelterbelt",
