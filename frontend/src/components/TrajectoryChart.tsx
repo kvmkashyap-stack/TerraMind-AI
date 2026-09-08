@@ -3,7 +3,7 @@
 import React from "react";
 import { TrajectoryResponse, ProjectMapHover } from "../services/api";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
-import { TrendingUp, AlertTriangle, CheckCircle2, Info, ArrowUpRight, ArrowDownRight, Layers, Activity } from "lucide-react";
+import { TrendingUp, AlertTriangle, CheckCircle2, Info, ArrowUpRight, ArrowDownRight, Activity } from "lucide-react";
 import GlobalSiteHeader from "./GlobalSiteHeader";
 
 interface TrajectoryChartProps {
@@ -122,6 +122,7 @@ export default function TrajectoryChart({
                     boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
                     fontSize: "12px",
                   }}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   formatter={(value: any) => [`${value}%`]}
                 />
                 <Legend wrapperStyle={{ paddingTop: "10px", fontSize: "12px", fontWeight: "bold" }} />

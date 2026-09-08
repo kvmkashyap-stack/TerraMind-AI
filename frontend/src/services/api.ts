@@ -178,7 +178,7 @@ export async function sendCopilotChat(query: string, projectId: string): Promise
   return res.json();
 }
 
-export async function uploadDocumentToRAG(file: File): Promise<any> {
+export async function uploadDocumentToRAG(file: File): Promise<Record<string, unknown>> {
   const formData = new FormData();
   formData.append("file", file);
   const res = await fetch(`${API_BASE_URL}/copilot/upload-document`, {

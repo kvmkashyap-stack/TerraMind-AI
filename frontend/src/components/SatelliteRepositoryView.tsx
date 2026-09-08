@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { SatelliteDataRepository, ProjectMapHover } from "../services/api";
-import { Database, Calendar, Cloud, CheckCircle2, Eye, Layers, Maximize2, X, SlidersHorizontal, Image as ImageIcon, MapPin, ZoomIn, ZoomOut, RefreshCw } from "lucide-react";
+import { Database, Calendar, Cloud, CheckCircle2, Eye, Layers, Maximize2, X, SlidersHorizontal, Image as ImageIcon, MapPin, ZoomIn } from "lucide-react";
 import GlobalSiteHeader from "./GlobalSiteHeader";
 
 interface SatelliteRepositoryViewProps {
@@ -58,8 +58,10 @@ export default function SatelliteRepositoryView({
   onAddDynamicProject,
 }: SatelliteRepositoryViewProps) {
   const [activeCompositeIdx, setActiveCompositeIdx] = useState<number>(0);
-  const [selectedInspectImage, setSelectedInspectImage] = useState<any | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [selectedInspectImage, setSelectedInspectImage] = useState<Record<string, any> | null>(null);
   const [isClient, setIsClient] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const leafletInspectMapRef = useRef<any>(null);
   const inspectContainerRef = useRef<HTMLDivElement>(null);
 
@@ -143,7 +145,7 @@ export default function SatelliteRepositoryView({
         leafletInspectMapRef.current = null;
       }
     };
-  }, [selectedInspectImage, siteLat, siteLng, isClient]);
+  }, [selectedInspectImage, siteLat, siteLng, isClient, data?.project_title, selectedProj?.title]);
 
   return (
     <div className="space-y-4">
@@ -203,6 +205,7 @@ export default function SatelliteRepositoryView({
           {/* Featured Processed Satellite Image View (Real High-Res Satellite Snapshot) */}
           <div className="relative w-full h-72 sm:h-[420px] rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-xl group">
             {/* Real Processed Satellite Photo Background centered on site coordinates */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={featuredSatelliteUrl}
               alt={`Satellite view of ${selectedProj?.title || data.project_title}`}
@@ -350,6 +353,7 @@ export default function SatelliteRepositoryView({
                   >
                     {/* Satellite Photo Thumbnail Card */}
                     <div className="relative h-48 w-full rounded-xl overflow-hidden bg-slate-900 border border-slate-700 flex flex-col justify-between p-3 shadow-inner">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={rasterThumbUrl}
                         alt={img.image_id}
