@@ -159,6 +159,38 @@ export const EXPANDED_PAN_INDIA_SITES: ProjectMapHover[] = [
     }
   },
 
+  {
+    project_id: "IND-GUJ-02",
+    title: "Sardar Sarovar Narmada Reservoir Catchment",
+    intervention_type: "Reservoir Catchment Desilting",
+    location_name: "Narmada, Gujarat",
+    coordinates: { lat: 21.8319, lng: 73.7489 },
+    health_status: "Green",
+    allocated_funds_inr: 75000000.0,
+    expended_funds_inr: 68000000.0,
+    budget_sufficiency: "Sufficient",
+    smuggling_alert_active: false,
+    land_cover: {
+      vegetation_coverage_pct: 45.0,
+      water_coverage_pct: 72.0,
+      urban_builtup_pct: 4.0,
+      barren_land_pct: 15.0
+    },
+    baseline_ndwi: 0.55,
+    current_ndwi: 0.72,
+    baseline_ndvi: 0.38,
+    current_ndvi: 0.48,
+    estimated_cost: {
+      corrective_action_required: "Narmada Channel Silt Trap Clearance & Afforestation",
+      estimated_cost_inr: 480000.0,
+      cost_breakdown: [
+        "Channel silt trap desilting (₹2,80,000)",
+        "Slope afforestation (₹2,00,000)"
+      ],
+      funding_scheme_recommended: "WDC-PMKSY 2.0 Catchment Fund"
+    }
+  },
+
   // 💧 DAMS & RESERVOIRS (NEW & EXPANDED)
   {
     project_id: "IND-KAR-DAM-01",
