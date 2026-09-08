@@ -77,6 +77,7 @@ export default function MapView({ projects, selectedProjectId, onSelectProject, 
   const leafletMapRef = useRef<any>(null);
   const currentTileLayerRef = useRef<any>(null);
   const currentTileStyleRef = useRef<string>("");
+  const prevSelectedProjectIdRef = useRef<string>("");
   const markersRef = useRef<{ [key: string]: any }>({});
   const polygonsRef = useRef<any[]>([]);
 
@@ -194,13 +195,16 @@ export default function MapView({ projects, selectedProjectId, onSelectProject, 
         // Center map over India
         const map = L.map(mapContainerRef.current, {
           center: [selectedProj ? selectedProj.coordinates.lat : 20.5937, selectedProj ? selectedProj.coordinates.lng : 78.9629],
-          zoom: selectedProj ? 10 : 5,
+          zoom: selectedProj ? 11 : 5,
           zoomControl: false,
         });
 
         L.control.zoom({ position: "bottomright" }).addTo(map);
 
         leafletMapRef.current = map;
+        requestAnimationFrame(() => {
+          map.invalidateSize({ animate: false });
+        });
       }
 
       const map = leafletMapRef.current;
@@ -253,7 +257,6 @@ export default function MapView({ projects, selectedProjectId, onSelectProject, 
               height: ${size}px;
               border-radius: 50%;
               ${isSelected ? `box-shadow: 0 0 0 4px ${glowColor}, 0 0 12px 6px ${glowColor};` : ""}
-              transition: all 0.2s ease;
               cursor: pointer;
             ">
               <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 24 24"
@@ -315,9 +318,15 @@ export default function MapView({ projects, selectedProjectId, onSelectProject, 
 
         polygonsRef.current.push(boundaryPoly, bufferCircle);
 
-        map.flyTo([lat, lng], 11, {
-          duration: 1.2,
-        });
+        // Only flyTo when user explicitly selects a different project after initial load
+        if (prevSelectedProjectIdRef.current && prevSelectedProjectIdRef.current !== selectedProjectId) {
+          map.flyTo([lat, lng], 11, {
+            duration: 1.0,
+          });
+        } else {
+          map.setView([lat, lng], 11, { animate: false });
+        }
+        prevSelectedProjectIdRef.current = selectedProjectId;
       }
     });
   }, [isClient, mapTileStyle, filteredProjects, selectedProjectId, activeCategory]);

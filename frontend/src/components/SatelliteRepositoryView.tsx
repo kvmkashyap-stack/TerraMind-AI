@@ -117,7 +117,7 @@ export default function SatelliteRepositoryView({
         className: "custom-site-pin",
         html: `
           <div class="relative flex items-center justify-center">
-            <div class="w-8 h-8 rounded-full bg-emerald-500/30 animate-ping absolute"></div>
+            <div class="w-7 h-7 rounded-full bg-emerald-500/30 absolute"></div>
             <div class="w-6 h-6 rounded-full bg-[#0F172A] border-2 border-emerald-400 flex items-center justify-center text-emerald-400 font-bold text-xs shadow-lg">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg>
             </div>
@@ -133,7 +133,9 @@ export default function SatelliteRepositoryView({
         .openPopup();
 
       leafletInspectMapRef.current = map;
-      setTimeout(() => map.invalidateSize(), 200);
+      requestAnimationFrame(() => {
+        map.invalidateSize({ animate: false });
+      });
     };
 
     initializeLeafletModal();
