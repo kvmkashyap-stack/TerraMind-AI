@@ -691,5 +691,209 @@ export const EXPANDED_PAN_INDIA_SITES: ProjectMapHover[] = [
       ],
       funding_scheme_recommended: "Green India Mission"
     }
+  },
+
+  // 💧 GROUNDWATER RECHARGE SITES
+  {
+    project_id: "IND-MAH-GW-01",
+    title: "Latur Aquifer Basin & Underground Recharge Shafts",
+    intervention_type: "Underground Aquifer Recharge & Check Dams",
+    location_name: "Latur, Marathwada, Maharashtra",
+    coordinates: { lat: 18.4088, lng: 76.5604 },
+    health_status: "Yellow",
+    allocated_funds_inr: 46000000.0,
+    expended_funds_inr: 39000000.0,
+    budget_sufficiency: "Sufficient",
+    smuggling_alert_active: false,
+    land_cover: {
+      vegetation_coverage_pct: 35.0,
+      water_coverage_pct: 12.0,
+      urban_builtup_pct: 18.0,
+      barren_land_pct: 35.0
+    },
+    baseline_ndwi: 0.12,
+    current_ndwi: 0.28,
+    baseline_ndvi: 0.30,
+    current_ndvi: 0.42,
+    estimated_cost: {
+      corrective_action_required: "Sub-Surface Check Dam Construction & Artesian Well Rejuvenation",
+      estimated_cost_inr: 450000.0,
+      cost_breakdown: [
+        "Deep recharge shaft boring (₹2,70,000)",
+        "Check dam desilting (₹1,80,000)"
+      ],
+      funding_scheme_recommended: "Atal Bhujal Yojana (ABHY)"
+    },
+    probable_cause: {
+      primary_factor: "Deep Basalt Aquifer Depletion & Over-Extraction",
+      funds_cause: "Sub-surface injection well allocation in progress",
+      people_encroachment_cause: "Unregulated borewell drilling in agricultural zone",
+      resource_availability_cause: "Hard rock basalt storage saturation low",
+      labour_execution_cause: "Geophysical survey completion at 85%"
+    }
+  },
+  {
+    project_id: "IND-MP-GW-01",
+    title: "Bundelkhand Drought Mitigation & Deep Aquifer Recharge",
+    intervention_type: "Sub-Surface Aquifer Recharge & Well Rejuvenation",
+    location_name: "Chhatarpur, Madhya Pradesh",
+    coordinates: { lat: 24.9163, lng: 79.5811 },
+    health_status: "Red",
+    allocated_funds_inr: 52000000.0,
+    expended_funds_inr: 14000000.0,
+    budget_sufficiency: "Budget Deficit",
+    smuggling_alert_active: false,
+    land_cover: {
+      vegetation_coverage_pct: 22.0,
+      water_coverage_pct: 8.0,
+      urban_builtup_pct: 10.0,
+      barren_land_pct: 60.0
+    },
+    baseline_ndwi: 0.10,
+    current_ndwi: 0.18,
+    baseline_ndvi: 0.28,
+    current_ndvi: 0.35,
+    estimated_cost: {
+      corrective_action_required: "Emergency Underground Check Dam & Recharge Pit Drilling",
+      estimated_cost_inr: 950000.0,
+      cost_breakdown: [
+        "Recharge pit network construction (₹5,00,000)",
+        "Sub-surface dyke barrier (₹4,50,000)"
+      ],
+      funding_scheme_recommended: "Atal Bhujal Crisis Fund & PMKSY-WDC"
+    },
+    probable_cause: {
+      primary_factor: "Granitic Aquifer Depletion & Rain Shadow Monsoonal Deficit",
+      funds_cause: "₹3.80 Cr funding delay for sub-surface dyke construction",
+      people_encroachment_cause: "Over-pumping for rabi crops",
+      resource_availability_cause: "Water table depth dropped to 140m below ground level",
+      labour_execution_cause: "Rig drilling delays in hard rock terrain"
+    }
+  },
+  {
+    project_id: "IND-GUJ-GW-01",
+    title: "Kutch Salinity Ingress & Coastal Groundwater Recharge",
+    intervention_type: "Coastal Groundwater Barrier & Recharge Well Network",
+    location_name: "Bhuj, Kutch, Gujarat",
+    coordinates: { lat: 23.2420, lng: 69.6669 },
+    health_status: "Green",
+    allocated_funds_inr: 48000000.0,
+    expended_funds_inr: 41000000.0,
+    budget_sufficiency: "Sufficient",
+    smuggling_alert_active: false,
+    land_cover: {
+      vegetation_coverage_pct: 25.0,
+      water_coverage_pct: 15.0,
+      urban_builtup_pct: 12.0,
+      barren_land_pct: 48.0
+    },
+    baseline_ndwi: 0.14,
+    current_ndwi: 0.32,
+    baseline_ndvi: 0.25,
+    current_ndvi: 0.38,
+    estimated_cost: {
+      corrective_action_required: "Freshwater Recharge Wall & Salinity Barrier Construction",
+      estimated_cost_inr: 380000.0,
+      cost_breakdown: [
+        "Freshwater injection wells (₹2,30,000)",
+        "Bund sealing (₹1,50,000)"
+      ],
+      funding_scheme_recommended: "National Groundwater Management Scheme"
+    }
+  },
+
+  // 🌿 VEGETATION BELTS & GREEN COVER SITES
+  {
+    project_id: "IND-KAR-VEG-01",
+    title: "Western Ghats Eco-Corridor & Canopy Shelterbelt",
+    intervention_type: "Tropical Rainforest Canopy Protection & Buffer Wall",
+    location_name: "Shivamogga, Western Ghats, Karnataka",
+    coordinates: { lat: 13.9299, lng: 75.5681 },
+    health_status: "Green",
+    allocated_funds_inr: 58000000.0,
+    expended_funds_inr: 51000000.0,
+    budget_sufficiency: "Sufficient",
+    smuggling_alert_active: false,
+    land_cover: {
+      vegetation_coverage_pct: 86.0,
+      water_coverage_pct: 8.0,
+      urban_builtup_pct: 2.0,
+      barren_land_pct: 4.0
+    },
+    baseline_ndwi: 0.30,
+    current_ndwi: 0.42,
+    baseline_ndvi: 0.74,
+    current_ndvi: 0.86,
+    estimated_cost: {
+      corrective_action_required: "Continuous Native Flora Canopy Bio-Shield Expansion",
+      estimated_cost_inr: 320000.0,
+      cost_breakdown: [
+        "Canopy bio-wall sapling plantation (₹2,00,000)",
+        "Corridor monitoring watchtowers (₹1,20,000)"
+      ],
+      funding_scheme_recommended: "Green India Mission (GIM) Bio-Shield Grant"
+    }
+  },
+  {
+    project_id: "IND-RAJ-VEG-01",
+    title: "Thar Desert Green Wall & Sand Dune Shelterbelt",
+    intervention_type: "Desert Afforestation & Anti-Desertification Shelterbelt",
+    location_name: "Jaisalmer, Rajasthan",
+    coordinates: { lat: 26.9157, lng: 70.9083 },
+    health_status: "Green",
+    allocated_funds_inr: 64000000.0,
+    expended_funds_inr: 56000000.0,
+    budget_sufficiency: "Sufficient",
+    smuggling_alert_active: false,
+    land_cover: {
+      vegetation_coverage_pct: 38.0,
+      water_coverage_pct: 5.0,
+      urban_builtup_pct: 7.0,
+      barren_land_pct: 50.0
+    },
+    baseline_ndwi: 0.08,
+    current_ndwi: 0.16,
+    baseline_ndvi: 0.22,
+    current_ndvi: 0.38,
+    estimated_cost: {
+      corrective_action_required: "5km Acacia & Khejri Afforestation Shelterbelt Extension",
+      estimated_cost_inr: 420000.0,
+      cost_breakdown: [
+        "Drip-irrigated sapling shelterbelt (₹2,70,000)",
+        "Sand dune stabilization fences (₹1,50,000)"
+      ],
+      funding_scheme_recommended: "Great Green Wall of India Anti-Desertification Initiative"
+    }
+  },
+  {
+    project_id: "IND-WB-VEG-01",
+    title: "Sundarbans Coastal Mangrove Bio-Shield Belt",
+    intervention_type: "Tidal Mangrove Bio-Barrier & Cyclone Protection Belt",
+    location_name: "South 24 Parganas, West Bengal",
+    coordinates: { lat: 21.9497, lng: 88.9007 },
+    health_status: "Green",
+    allocated_funds_inr: 71000000.0,
+    expended_funds_inr: 64000000.0,
+    budget_sufficiency: "Sufficient",
+    smuggling_alert_active: false,
+    land_cover: {
+      vegetation_coverage_pct: 82.0,
+      water_coverage_pct: 14.0,
+      urban_builtup_pct: 1.0,
+      barren_land_pct: 3.0
+    },
+    baseline_ndwi: 0.45,
+    current_ndwi: 0.58,
+    baseline_ndvi: 0.68,
+    current_ndvi: 0.82,
+    estimated_cost: {
+      corrective_action_required: "Rhizophora Mangrove Mudflat Regeneration & Bio-Wall Fencing",
+      estimated_cost_inr: 490000.0,
+      cost_breakdown: [
+        "Propagule mudflat planting (₹3,10,000)",
+        "Embankment mangrove protection wall (₹1,80,000)"
+      ],
+      funding_scheme_recommended: "MISHTI Mangrove Initiative for Shoreline Habitats"
+    }
   }
 ];

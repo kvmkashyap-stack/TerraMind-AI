@@ -177,7 +177,11 @@ export default function MapView({ projects, selectedProjectId, onSelectProject, 
     setActiveCategory(catId);
     const catProjects = allProjects.filter((p) => matchesCategory(p, catId));
     if (catProjects.length > 0) {
-      onSelectProject(catProjects[0].project_id);
+      const targetProj = catProjects[0];
+      onSelectProject(targetProj.project_id);
+      if (leafletMapRef.current) {
+        leafletMapRef.current.flyTo([targetProj.coordinates.lat, targetProj.coordinates.lng], 10, { duration: 1.2 });
+      }
     }
   };
 
