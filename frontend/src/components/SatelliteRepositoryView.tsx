@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { SatelliteDataRepository, ProjectMapHover } from "../services/api";
+import { SatelliteDataRepository, ProjectMapHover, SatelliteImageItem } from "../services/api";
 import { Database, Calendar, Cloud, CheckCircle2, Eye, Layers, Maximize2, X, SlidersHorizontal, Image as ImageIcon, MapPin, ZoomIn } from "lucide-react";
 import GlobalSiteHeader from "./GlobalSiteHeader";
 
@@ -45,7 +45,7 @@ const SATELLITE_COMPOSITES = [
   {
     type: "NDWI Hydro Surface Extent",
     label: "NDWI Water Surface Map",
-    filterClass: "hue-rotate-[180deg] saturate-[2.5] contrast-[1.3] brightness-90",
+    filterClass: "hue-rotate-[180deg] saturate-[1.8] contrast-[1.3] brightness-90",
     desc: "Normalized Difference Water Index highlighting water body extent, surface area, and reservoir storage levels.",
   },
 ];
@@ -58,8 +58,7 @@ export default function SatelliteRepositoryView({
   onAddDynamicProject,
 }: SatelliteRepositoryViewProps) {
   const [activeCompositeIdx, setActiveCompositeIdx] = useState<number>(0);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [selectedInspectImage, setSelectedInspectImage] = useState<Record<string, any> | null>(null);
+  const [selectedInspectImage, setSelectedInspectImage] = useState<SatelliteImageItem | null>(null);
   const [isClient, setIsClient] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const leafletInspectMapRef = useRef<any>(null);

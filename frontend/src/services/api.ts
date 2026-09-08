@@ -68,28 +68,30 @@ export interface BaselineComparisonReport {
   overall_health_diagnosis: string;
 }
 
+export interface SatelliteImageItem {
+  image_id: string;
+  project_id: string;
+  acquisition_date: string;
+  satellite_source: string;
+  cloud_cover_percentage: number;
+  resolution_meters: number;
+  raw_rgb_url: string;
+  ndvi_composite_url: string;
+  ndwi_composite_url: string;
+  ndbi_composite_url: string;
+  processed_status: string;
+  vegetation_coverage_pct: number;
+  water_body_coverage_pct: number;
+  builtup_coverage_pct: number;
+}
+
 export interface SatelliteDataRepository {
   project_id: string;
   project_title: string;
   coordinates?: { latitude: number; longitude: number };
   total_images_captured: number;
   latest_observation_date: string;
-  images: Array<{
-    image_id: string;
-    project_id: string;
-    acquisition_date: string;
-    satellite_source: string;
-    cloud_cover_percentage: number;
-    resolution_meters: number;
-    raw_rgb_url: string;
-    ndvi_composite_url: string;
-    ndwi_composite_url: string;
-    ndbi_composite_url: string;
-    processed_status: string;
-    vegetation_coverage_pct: number;
-    water_body_coverage_pct: number;
-    builtup_coverage_pct: number;
-  }>;
+  images: SatelliteImageItem[];
 }
 
 export interface ImpactScoreBreakdown {
