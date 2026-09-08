@@ -75,6 +75,8 @@ export default function MapView({ projects, selectedProjectId, onSelectProject, 
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const leafletMapRef = useRef<any>(null);
+  const currentTileLayerRef = useRef<any>(null);
+  const currentTileStyleRef = useRef<string>("");
   const markersRef = useRef<{ [key: string]: any }>({});
   const polygonsRef = useRef<any[]>([]);
 
@@ -203,26 +205,26 @@ export default function MapView({ projects, selectedProjectId, onSelectProject, 
 
       const map = leafletMapRef.current;
 
-      // Clear existing tile layers
-      map.eachLayer((layer: any) => {
-        if (layer instanceof L.TileLayer) {
-          map.removeLayer(layer);
+      // Only swap tile layer if style changed or tile layer is not created yet
+      if (!currentTileLayerRef.current || currentTileStyleRef.current !== mapTileStyle) {
+        if (currentTileLayerRef.current) {
+          map.removeLayer(currentTileLayerRef.current);
         }
-      });
 
-      // Add Satellite / Street Tile Layer
-      let tileUrl = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-      let attribution = "High-Resolution Satellite Imagery";
+        let tileUrl = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+        let attribution = "High-Resolution Satellite Imagery";
 
-      if (mapTileStyle === "street") {
-        tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-        attribution = '&copy; OpenStreetMap contributors';
-      } else if (mapTileStyle === "topo") {
-        tileUrl = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
-        attribution = 'Map data: &copy; OpenStreetMap, SRTM';
+        if (mapTileStyle === "street") {
+          tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+          attribution = '&copy; OpenStreetMap contributors';
+        } else if (mapTileStyle === "topo") {
+          tileUrl = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
+          attribution = 'Map data: &copy; OpenStreetMap, SRTM';
+        }
+
+        currentTileLayerRef.current = L.tileLayer(tileUrl, { attribution, maxZoom: 19 }).addTo(map);
+        currentTileStyleRef.current = mapTileStyle;
       }
-
-      L.tileLayer(tileUrl, { attribution, maxZoom: 19 }).addTo(map);
 
       // Clear existing markers and boundary polygons
       Object.values(markersRef.current).forEach((m: any) => map.removeLayer(m));

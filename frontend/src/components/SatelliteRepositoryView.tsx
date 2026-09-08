@@ -207,8 +207,8 @@ export default function SatelliteRepositoryView({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={featuredSatelliteUrl}
-              alt={`Satellite view of ${selectedProj?.title || data.project_title}`}
-              className={`w-full h-full object-cover transition-all duration-700 ${SATELLITE_COMPOSITES[activeCompositeIdx].filterClass}`}
+              alt={`Satellite view of ${selectedProj?.title || data?.project_title || "Site"}`}
+              className={`w-full h-full object-cover transition-[filter] duration-300 ease-out ${SATELLITE_COMPOSITES[activeCompositeIdx].filterClass}`}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-slate-950/40 pointer-events-none"></div>
 
