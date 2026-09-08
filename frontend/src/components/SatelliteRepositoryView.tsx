@@ -291,7 +291,7 @@ export default function SatelliteRepositoryView({
             <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-wrap items-end justify-between gap-3 text-white">
               <div className="space-y-1 max-w-xl">
                 <div className="text-xs font-mono text-sky-300 font-bold uppercase tracking-wider">
-                  {selectedProj ? selectedProj.title : data.project_title} Satellite Scene
+                  {selectedProj ? selectedProj.title : activeData.project_title} Satellite Scene
                 </div>
                 <p className="text-xs text-slate-200 font-medium leading-relaxed drop-shadow-md">
                   {SATELLITE_COMPOSITES[activeCompositeIdx].desc}
