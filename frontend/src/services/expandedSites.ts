@@ -1,6 +1,164 @@
 import { ProjectMapHover } from "./api";
 
 export const EXPANDED_PAN_INDIA_SITES: ProjectMapHover[] = [
+  // 🔴 RED STATUS CRITICAL SITES
+  {
+    project_id: "IND-RAJ-FOR-RED-01",
+    title: "Sariska Tiger Reserve Canopy Crisis Zone",
+    intervention_type: "Forest Reserve Protection",
+    location_name: "Alwar, Rajasthan",
+    coordinates: { lat: 27.3300, lng: 76.4400 },
+    health_status: "Red",
+    allocated_funds_inr: 38000000.0,
+    expended_funds_inr: 9200000.0,
+    budget_sufficiency: "Budget Deficit",
+    smuggling_alert_active: true,
+    land_cover: {
+      vegetation_coverage_pct: 31.0,
+      water_coverage_pct: 8.0,
+      urban_builtup_pct: 12.0,
+      barren_land_pct: 49.0
+    },
+    baseline_ndwi: 0.18,
+    current_ndwi: 0.10,
+    baseline_ndvi: 0.58,
+    current_ndvi: 0.31,
+    estimated_cost: {
+      corrective_action_required: "Emergency Anti-Poaching Force Deployment & Canopy Rehabilitation",
+      estimated_cost_inr: 1250000.0,
+      cost_breakdown: [
+        "Emergency anti-poaching mobile patrol units (₹5,50,000)",
+        "Satellite drone canopy monitoring system (₹4,00,000)",
+        "Native tree sapling emergency plantation (₹3,00,000)"
+      ],
+      funding_scheme_recommended: "Project Tiger Emergency Intervention Fund & CAMPA Crisis Grant"
+    },
+    probable_cause: {
+      primary_factor: "Timber Smuggling & Illegal Poaching Pressure",
+      funds_cause: "₹2.88 Cr Budget Deficit delaying anti-poaching drone deployment",
+      people_encroachment_cause: "Unauthorized cattle grazing and illegal timber felling along outer corridor",
+      resource_availability_cause: "Groundwater depletion reducing sapling survival rate by 42%",
+      labour_execution_cause: "Forest guard vacancy rate at 35% in northern sector"
+    }
+  },
+  {
+    project_id: "IND-MP-FOR-RED-01",
+    title: "Panna Tiger Reserve Degraded Core Zone",
+    intervention_type: "Forest Reserve Protection",
+    location_name: "Panna, Madhya Pradesh",
+    coordinates: { lat: 24.7200, lng: 80.1900 },
+    health_status: "Red",
+    allocated_funds_inr: 42000000.0,
+    expended_funds_inr: 8500000.0,
+    budget_sufficiency: "Budget Deficit",
+    smuggling_alert_active: true,
+    land_cover: {
+      vegetation_coverage_pct: 28.0,
+      water_coverage_pct: 12.0,
+      urban_builtup_pct: 8.0,
+      barren_land_pct: 52.0
+    },
+    baseline_ndwi: 0.22,
+    current_ndwi: 0.12,
+    baseline_ndvi: 0.62,
+    current_ndvi: 0.28,
+    estimated_cost: {
+      corrective_action_required: "Tiger Rewilding Program & Illegal Mining Enforcement",
+      estimated_cost_inr: 1450000.0,
+      cost_breakdown: [
+        "Illegal mining cessation enforcement & boundary wall (₹6,00,000)",
+        "Tiger corridor bio-bridge construction (₹5,00,000)",
+        "Riparian vegetation emergency replanting (₹3,50,000)"
+      ],
+      funding_scheme_recommended: "National Tiger Conservation Authority Emergency Fund"
+    },
+    probable_cause: {
+      primary_factor: "Illegal Diamond Mining & Encroachment",
+      funds_cause: "₹3.35 Cr unreleased central allocation for core zone fencing",
+      people_encroachment_cause: "Mining encroachment along Ken river catchment buffer",
+      resource_availability_cause: "Monsoon runoff loss due to unlined mining pits",
+      labour_execution_cause: "Contractor delay in boundary patrol post construction"
+    }
+  },
+  {
+    project_id: "IND-KAR-DAM-RED-01",
+    title: "Tungabhadra Dam Critical Siltation Crisis",
+    intervention_type: "Reservoir Siltation Control",
+    location_name: "Hospet, Ballari, Karnataka",
+    coordinates: { lat: 15.2600, lng: 76.3400 },
+    health_status: "Red",
+    allocated_funds_inr: 65000000.0,
+    expended_funds_inr: 11000000.0,
+    budget_sufficiency: "Budget Deficit",
+    smuggling_alert_active: false,
+    land_cover: {
+      vegetation_coverage_pct: 22.0,
+      water_coverage_pct: 38.0,
+      urban_builtup_pct: 14.0,
+      barren_land_pct: 26.0
+    },
+    baseline_ndwi: 0.62,
+    current_ndwi: 0.38,
+    baseline_ndvi: 0.40,
+    current_ndvi: 0.22,
+    estimated_cost: {
+      corrective_action_required: "Emergency Dredging & Silt Trap Rehabilitation — 76% Capacity Lost",
+      estimated_cost_inr: 2800000.0,
+      cost_breakdown: [
+        "Heavy dredger deployment for 76% silted basin (₹14,00,000)",
+        "Upstream check dam emergency repair network (₹8,00,000)",
+        "Catchment rim afforestation & erosion control (₹6,00,000)"
+      ],
+      funding_scheme_recommended: "Dam Rehabilitation & Improvement Project (DRIP Phase II) Emergency Grant"
+    },
+    probable_cause: {
+      primary_factor: "Severe Catchment Silt Accumulation (76% Loss)",
+      funds_cause: "₹5.40 Cr shortfall for heavy cutter suction dredger leasing",
+      people_encroachment_cause: "Topsoil erosion from illegal farming on catchment slopes",
+      resource_availability_cause: "Silt deposit build-up of 33 TMC reducing live storage capacity",
+      labour_execution_cause: "Desilting fleet operating at 40% capacity due to machinery breakdown"
+    }
+  },
+  {
+    project_id: "IND-TN-DAM-RED-01",
+    title: "Mettur Stanley Reservoir — Drought & Siltation Crisis",
+    intervention_type: "Reservoir Catchment Protection",
+    location_name: "Salem, Tamil Nadu",
+    coordinates: { lat: 11.8000, lng: 77.8000 },
+    health_status: "Red",
+    allocated_funds_inr: 58000000.0,
+    expended_funds_inr: 7500000.0,
+    budget_sufficiency: "Budget Deficit",
+    smuggling_alert_active: false,
+    land_cover: {
+      vegetation_coverage_pct: 18.0,
+      water_coverage_pct: 32.0,
+      urban_builtup_pct: 16.0,
+      barren_land_pct: 34.0
+    },
+    baseline_ndwi: 0.58,
+    current_ndwi: 0.32,
+    baseline_ndvi: 0.35,
+    current_ndvi: 0.18,
+    estimated_cost: {
+      corrective_action_required: "Cauvery Inflow Desilting & Emergency Water Storage Protection",
+      estimated_cost_inr: 2200000.0,
+      cost_breakdown: [
+        "River delta silt trap clearance (₹10,00,000)",
+        "Reservoir bed desilting mobilization (₹8,00,000)",
+        "Catchment bund afforestation (₹4,00,000)"
+      ],
+      funding_scheme_recommended: "PMKSY Watershed Crisis Assistance Fund"
+    },
+    probable_cause: {
+      primary_factor: "Severe Monsoonal Deficit & Silt Deposits",
+      funds_cause: "₹5.05 Cr funding delay for emergency desilting operations",
+      people_encroachment_cause: "Unregulated sand mining upstream altering inflow channels",
+      resource_availability_cause: "Inflow deficit of 42% compared to 10-year mean",
+      labour_execution_cause: "Desilting workforce shortages during peak dry season"
+    }
+  },
+
   // 💧 DAMS & RESERVOIRS (NEW & EXPANDED)
   {
     project_id: "IND-KAR-DAM-01",
