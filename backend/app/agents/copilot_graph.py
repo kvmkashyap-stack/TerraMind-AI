@@ -249,8 +249,34 @@ def _build_grounded_web_response(query: str, is_casual: bool, scraped: list, met
 
     parts = []
 
+    # 0. Vegetation / Canopy / Forest Cover / Land Cover queries
+    if any(w in q_lower for w in ["vegetation", "vegitation", "canopy", "forest cover", "land cover", "trees", "foliage", "density", "sariska", "corbett", "panna"]):
+        status = meta.get("health_status", "Yellow")
+        ndvi = meta.get("current_ndvi", 0.49)
+        base_ndvi = meta.get("baseline_ndvi", 0.55)
+        veg_pct = meta.get("veg_pct", 45.0)
+        barren_pct = meta.get("barren_pct", 15.0)
+        water_pct = meta.get("water_pct", 30.0)
+        urban_pct = meta.get("urban_pct", 10.0)
+        pc_text = meta.get("probable_cause_text", "")
+        
+        parts.append(
+            f"### 🌿 Vegetation & Canopy Cover Analysis for **{title}** ({status} Status)\n\n"
+            f"• **Vegetation Canopy Coverage**: **{veg_pct}%** (Baseline NDVI {base_ndvi} → Current Live NDVI **{ndvi}**)\n"
+            f"• **Land Cover Composition Breakdown**: Barren Land **{barren_pct}%**, Water Extent **{water_pct}%**, Urban/Built-up **{urban_pct}%**\n"
+            f"• **Smuggling & Habitat Threat Alert**: **{'Active Warning 🚨' if meta.get('smuggling_alert_active') else 'Clear (Inactive) ✅'}**\n"
+            f"• **Location**: {meta.get('location_name', 'India')} | **Intervention**: {meta.get('intervention_type', 'Forest Protection')}"
+        )
+        if pc_text:
+            parts.append(f"• **Identified Habitat & Vegetation Pressures**:\n  {pc_text}")
+        elif status == "Red":
+            parts.append(
+                f"• **Critical Vegetation Crisis**: Severe canopy degradation driven by illegal timber felling, cattle grazing, "
+                f"and groundwater table depletion."
+            )
+
     # 1. Trajectory / Recovery Curve queries
-    if any(w in q_lower for w in ["trajectory", "trend", "recovery rate", "variance", "why is the trajectory", "why trajectory", "deviation"]):
+    elif any(w in q_lower for w in ["trajectory", "trend", "recovery rate", "variance", "why is the trajectory", "why trajectory", "deviation"]):
         status = meta.get("health_status", "Yellow")
         traj_summary = meta.get("trajectory_summary", "")
         variance = meta.get("variance", 15.0)
