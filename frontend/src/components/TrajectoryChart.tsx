@@ -120,7 +120,8 @@ export default function TrajectoryChart({
                 </div>
                 <p className="leading-relaxed">{activeData.status_summary}</p>
               </div>
-            )}</div>
+            )}
+          </div>
 
           {/* Dynamic Recharts Line Chart */}
           <div className="w-full h-80 pt-2">
@@ -165,7 +166,7 @@ export default function TrajectoryChart({
 
           {/* Milestone Metrics Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 pt-2">
-            {data.trajectory_points.map((pt, idx) => {
+            {activeData.trajectory_points.map((pt, idx) => {
               const isAhead = pt.deviation_delta >= 0;
               return (
                 <div key={idx} className="bg-[#F6F8F3] border border-[#D5E2D6] p-3 rounded-xl space-y-1 text-center shadow-2xs">
@@ -182,7 +183,6 @@ export default function TrajectoryChart({
             })}
           </div>
         </div>
-      )}
     </div>
   );
 }
