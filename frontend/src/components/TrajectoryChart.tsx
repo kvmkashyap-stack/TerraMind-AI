@@ -2,6 +2,7 @@
 
 import React from "react";
 import { TrajectoryResponse, ProjectMapHover } from "../services/api";
+import { EXPANDED_PAN_INDIA_SITES } from "../services/expandedSites";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import { TrendingUp, AlertTriangle, CheckCircle2, Info, ArrowUpRight, ArrowDownRight, Activity } from "lucide-react";
 import GlobalSiteHeader from "./GlobalSiteHeader";
@@ -14,6 +15,121 @@ interface TrajectoryChartProps {
   onAddDynamicProject?: (project: ProjectMapHover) => void;
 }
 
+function computeDynamicTrajectory(
+  proj: ProjectMapHover | undefined,
+  selectedProjectId: string
+): TrajectoryResponse {
+  const pId = proj?.project_id || selectedProjectId || "IND-RAJ-FOR-RED-01";
+  const matchedProj = proj || EXPANDED_PAN_INDIA_SITES.find((p) => p.project_id === pId) || EXPANDED_PAN_INDIA_SITES[0];
+  
+  const title = matchedProj.title;
+  const status = matchedProj.health_status || "Yellow";
+  const interv = matchedProj.intervention_type || "Ecological Conservation";
+
+  // Deterministic seed [0..1) unique to each project_id
+  const seed = (pId.split("").reduce((acc, char, i) => acc + char.charCodeAt(0) * (i + 1), 0) % 97) / 97.0;
+
+  // Determine indicator metric (NDVI for forests/vegetation, NDWI for water bodies/dams/groundwater)
+  const isForest = /forest|canopy|park|tiger|reserve|sanctuary|vegetation|jungle|tree|agumbe|silent/i.test(
+    `${title} ${interv} ${pId}`
+  );
+
+  const baseRaw = isForest ? (matchedProj.baseline_ndvi ?? 0.55) : (matchedProj.baseline_ndwi ?? 0.45);
+  const currRaw = isForest ? (matchedProj.current_ndvi ?? 0.40) : (matchedProj.current_ndwi ?? 0.35);
+
+  const baseVal = Math.round(baseRaw * 1000) / 10;
+  const currVal = Math.round(currRaw * 1000) / 10;
+
+  const totalGain = currVal - baseVal;
+  const isDegraded = totalGain < 0 || status === "Red";
+  const smugglingActive = matchedProj.smuggling_alert_active ?? false;
+
+  const monthLabels = [
+    { label: "Baseline", time: "2025-01-01" },
+    { label: "Month 2", time: "2025-03-01" },
+    { label: "Month 4", time: "2025-05-01" },
+    { label: "Month 7", time: "2025-08-01" },
+    { label: "Month 10", time: "2025-11-01" },
+    { label: "Month 12", time: "2026-01-01" },
+  ];
+
+  // Expected target trajectory (Target Curve)
+  const expTargetGain = isDegraded ? Math.max(7.0, Math.abs(totalGain) * 1.3 + 4.0) : Math.max(5.0, totalGain * 1.15 + 2.5);
+
+  const expRatios = [0.0, 0.18, 0.38, 0.65, 0.86, 1.0];
+
+  // Actual progress ratios per month depend on health_status & smuggling risk
+  let actualRatios: number[];
+  if (status === "Green") {
+    actualRatios = [0.0, 0.24 + seed * 0.05, 0.48 + seed * 0.05, 0.74 + seed * 0.05, 0.90 + seed * 0.04, 1.0];
+  } else if (status === "Yellow") {
+    actualRatios = [0.0, 0.12 + seed * 0.06, 0.34 + seed * 0.06, 0.62 + seed * 0.06, 0.84 + seed * 0.05, 1.0];
+  } else {
+    // Red / Critical status
+    actualRatios = [0.0, 0.15, 0.35, 0.60, 0.82, 1.0];
+  }
+
+  const points = monthLabels.map((m, idx) => {
+    // Expected curve calculation
+    const expVal = Math.round((baseVal + expTargetGain * expRatios[idx]) * 10) / 10;
+
+    // Seasonal sine wave variation unique to site seed
+    const seasonal = Math.sin((idx / 5.0) * 2 * Math.PI + seed * Math.PI * 2) * (0.8 + seed * 0.8);
+
+    let actVal: number;
+    if (idx === 0) {
+      actVal = baseVal;
+    } else if (idx === 5) {
+      actVal = currVal;
+    } else {
+      let rawAct = baseVal + totalGain * actualRatios[idx] + seasonal;
+      // Mid-trajectory smuggling dip for Months 4-7 if smuggling alert is active
+      if (smugglingActive && (idx === 2 || idx === 3)) {
+        rawAct -= 2.8 + seed * 1.5;
+      }
+      actVal = Math.round(rawAct * 10) / 10;
+    }
+
+    const devDelta = Math.round((actVal - expVal) * 10) / 10;
+
+    return {
+      month_label: m.label,
+      timestamp: m.time,
+      expected_recovery_value: expVal,
+      actual_observed_value: actVal,
+      deviation_delta: devDelta,
+    };
+  });
+
+  const finalActual = points[points.length - 1].actual_observed_value;
+  const finalExp = points[points.length - 1].expected_recovery_value;
+  const overallVariance = Math.round(((finalActual - finalExp) / finalExp) * 1000) / 10;
+
+  const perfStatus =
+    overallVariance >= 0
+      ? `On Track (+${overallVariance}%)`
+      : overallVariance >= -10
+      ? `Moderate Lag (${overallVariance}%)`
+      : `Critical Deficit (${overallVariance}%)`;
+
+  const primaryFactor = matchedProj.probable_cause?.primary_factor || "anthropogenic pressures & canopy degradation";
+  const summary = isDegraded
+    ? `Site displays significant trajectory divergence (${overallVariance}% gap vs expected target curve). Vegetation canopy / water body extent declined due to ${primaryFactor}.`
+    : `Site demonstrates positive recovery trajectory aligned with intervention goals (+${overallVariance}% vs target curve).`;
+
+  return {
+    project_id: pId,
+    intervention_type: interv,
+    metric_name: isForest ? "NDVI Vegetation Canopy Cover %" : "NDWI Water Surface Extent %",
+    baseline_value: baseVal,
+    current_value: currVal,
+    performance_status: perfStatus,
+    overall_variance_percentage: overallVariance,
+    trajectory_points: points,
+    status_summary: summary,
+  };
+}
+
 export default function TrajectoryChart({ 
   data, 
   projects = [], 
@@ -23,23 +139,10 @@ export default function TrajectoryChart({
 }: TrajectoryChartProps) {
   const selectedProj = projects.find((p) => p.project_id === selectedProjectId);
 
-  const activeData: TrajectoryResponse = data || {
-    project_id: selectedProjectId || "IND-KAR-DAM-01",
-    intervention_type: selectedProj?.intervention_type || "Ecological Conservation",
-    metric_name: "NDVI Canopy & Water Storage Recovery Target Curve",
-    baseline_value: (selectedProj?.baseline_ndvi ?? 0.45) * 100,
-    current_value: (selectedProj?.current_ndvi ?? 0.60) * 100,
-    performance_status: selectedProj?.health_status === "Red" ? "Critical Lag (-12.4%)" : "On Track (+3.2%)",
-    overall_variance_percentage: selectedProj?.health_status === "Red" ? -12.4 : 3.2,
-    trajectory_points: [
-      { month_label: "Baseline", timestamp: "2025-01-01", expected_recovery_value: 45.0, actual_observed_value: 45.0, deviation_delta: 0.0 },
-      { month_label: "Month 2", timestamp: "2025-03-01", expected_recovery_value: 48.0, actual_observed_value: selectedProj?.health_status === "Red" ? 44.5 : 47.2, deviation_delta: selectedProj?.health_status === "Red" ? -3.5 : -0.8 },
-      { month_label: "Month 4", timestamp: "2025-05-01", expected_recovery_value: 52.0, actual_observed_value: selectedProj?.health_status === "Red" ? 43.0 : 51.5, deviation_delta: selectedProj?.health_status === "Red" ? -9.0 : -0.5 },
-      { month_label: "Month 7", timestamp: "2025-08-01", expected_recovery_value: 57.0, actual_observed_value: selectedProj?.health_status === "Red" ? 42.5 : 58.2, deviation_delta: selectedProj?.health_status === "Red" ? -14.5 : +1.2 },
-      { month_label: "Month 10", timestamp: "2025-11-01", expected_recovery_value: 62.0, actual_observed_value: selectedProj?.health_status === "Red" ? 41.0 : 63.5, deviation_delta: selectedProj?.health_status === "Red" ? -21.0 : +1.5 },
-      { month_label: "Month 12", timestamp: "2026-01-01", expected_recovery_value: 65.0, actual_observed_value: selectedProj?.health_status === "Red" ? 40.0 : 67.8, deviation_delta: selectedProj?.health_status === "Red" ? -25.0 : +2.8 },
-    ],
-  };
+  const activeData: TrajectoryResponse =
+    data && data.project_id === selectedProjectId && data.trajectory_points && data.trajectory_points.length > 0
+      ? data
+      : computeDynamicTrajectory(selectedProj, selectedProjectId);
 
   const chartData = activeData.trajectory_points.map((p) => ({
     name: p.month_label,
