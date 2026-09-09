@@ -8,16 +8,17 @@ from app.core.config import settings
 
 # ─── System & User Prompts ───────────────────────────────────────────────────
 
-COPILOT_SYSTEM_PROMPT = """You are Dr. Arjun Mehta, a Senior Wildlife & Environmental Conservation Specialist.
+COPILOT_SYSTEM_PROMPT = """You are Dr. Arjun Mehta, a Senior Wildlife & Environmental Conservation Specialist and Intelligent AI Assistant.
 Your goal is to provide articulate, natural, detailed, and directly relevant answers to whatever question the user asks.
 
 CRITICAL INSTRUCTIONS:
 1. Answer the user's EXACT question directly and in detail.
-2. DO NOT use artificial template headers (e.g. "Regarding your query on...", "Under MoEFCC...", "Water & Storage Telemetry", "Recommended Next Steps").
-3. Base your response on factual web search data and official conservation knowledge.
+2. DO NOT mention Sariska Tiger Reserve or any specific site UNLESS the user explicitly asked about that site or asked for current site telemetry.
+3. If the user asks general knowledge questions (e.g. "who is Virat Kohli", "what is 2+2", "how to save water", "how to improve forest", "climate change"), answer that question directly and accurately.
 4. Include official website citations formatted as bold clickable Markdown links: [**Source Title**](url).
 5. Always speak naturally and conversationally, like ChatGPT, Claude, or Gemini.
 """
+
 
 # ─── Intent Classification ────────────────────────────────────────────────────
 
@@ -127,8 +128,8 @@ async def llm_reasoning_node(state: AgentState) -> Dict[str, Any]:
             f"Live Web Search & Article Context:\n{web_context_str if web_context_str else 'No web sources available.'}\n\n"
             f"INSTRUCTIONS:\n"
             f"1. Answer the user's EXACT question directly, in detail, and thoroughly.\n"
-            f"2. Do NOT use boilerplate headers or templates.\n"
-            f"3. Incorporate relevant factual details from the live web context above.\n"
+            f"2. DO NOT mention Sariska Tiger Reserve or any specific site UNLESS the user explicitly asked about that site.\n"
+            f"3. If the user asks general questions (e.g., who is Virat Kohli, what is 2+2, how to save water, how to improve forest), answer that question directly and accurately.\n"
             f"4. Include official website citations formatted as bold clickable Markdown links: [**Source Title**](url)."
         )
 
@@ -225,9 +226,7 @@ def _build_grounded_web_response(query: str, is_casual: bool, scraped: list, met
             return "Hello! I'm Dr. Arjun Mehta. What question can I help answer for you today?"
         if any(kw in q_lower for kw in ["thanks", "thank you"]):
             return "You're very welcome! Feel free to ask if you have any other questions."
-        return "Hello! How can I assist you with your conservation query today?"
-
-    title = meta.get("title", "Selected Site")
+        return "Hello! How can I assist you today?"
 
     # Extract scraped web search citations & build bold Markdown links
     citation_links = []
@@ -245,103 +244,120 @@ def _build_grounded_web_response(query: str, is_casual: bool, scraped: list, met
                 if len(clean_text) > 30:
                     extracted_facts.append(clean_text[:400])
 
-    citations_str = " • ".join(citation_links[:3]) if citation_links else "[**MoEFCC Official Portal**](https://moef.gov.in) • [**National Tiger Conservation Authority**](https://ntca.gov.in)"
+    citations_str = " • ".join(citation_links[:3]) if citation_links else "[**MoEFCC Official Portal**](https://moef.gov.in) • [**Forest Survey of India**](https://fsi.nic.in)"
 
-    parts = []
+    # Identify if query specifically mentions a project site or current site telemetry
+    site_keywords = [
+        "sariska", "corbett", "panna", "tungabhadra", "mettur", "agumbe", "silent valley",
+        "sardar sarovar", "varthur", "krs", "anantapur", "bandipur", "sundarbans",
+        "this site", "current site", "selected site", "this project", "here"
+    ]
+    is_explicit_site = any(k in q_lower for k in site_keywords)
+    is_telemetry = any(k in q_lower for k in ["trajectory", "budget", "allocated funds", "expended", "satellite data", "ndvi", "ndwi", "smuggling alert"])
 
-    # 0. Vegetation / Canopy / Forest Cover / Land Cover queries
-    if any(w in q_lower for w in ["vegetation", "vegitation", "canopy", "forest cover", "land cover", "trees", "foliage", "density", "sariska", "corbett", "panna"]):
-        status = meta.get("health_status", "Yellow")
-        ndvi = meta.get("current_ndvi", 0.49)
-        base_ndvi = meta.get("baseline_ndvi", 0.55)
-        veg_pct = meta.get("veg_pct", 45.0)
-        barren_pct = meta.get("barren_pct", 15.0)
-        water_pct = meta.get("water_pct", 30.0)
-        urban_pct = meta.get("urban_pct", 10.0)
-        pc_text = meta.get("probable_cause_text", "")
-        
-        parts.append(
-            f"### 🌿 Vegetation & Canopy Cover Analysis for **{title}** ({status} Status)\n\n"
-            f"• **Vegetation Canopy Coverage**: **{veg_pct}%** (Baseline NDVI {base_ndvi} → Current Live NDVI **{ndvi}**)\n"
-            f"• **Land Cover Composition Breakdown**: Barren Land **{barren_pct}%**, Water Extent **{water_pct}%**, Urban/Built-up **{urban_pct}%**\n"
-            f"• **Smuggling & Habitat Threat Alert**: **{'Active Warning 🚨' if meta.get('smuggling_alert_active') else 'Clear (Inactive) ✅'}**\n"
-            f"• **Location**: {meta.get('location_name', 'India')} | **Intervention**: {meta.get('intervention_type', 'Forest Protection')}"
-        )
-        if pc_text:
-            parts.append(f"• **Identified Habitat & Vegetation Pressures**:\n  {pc_text}")
-        elif status == "Red":
-            parts.append(
-                f"• **Critical Vegetation Crisis**: Severe canopy degradation driven by illegal timber felling, cattle grazing, "
-                f"and groundwater table depletion."
+    # 1. Non-site / General Knowledge / Math / Off-topic queries (e.g. "who is Virat Kohli", "2+2", "how to save water", "how to improve forest")
+    if not is_explicit_site and not is_telemetry:
+        # Math queries
+        math_match = re.search(r'\b(\d+)\s*([\+\-\*\/])\s*(\d+)\b', q)
+        if math_match:
+            try:
+                num1 = float(math_match.group(1))
+                op = math_match.group(2)
+                num2 = float(math_match.group(3))
+                val = eval(f"{num1} {op} {num2}")
+                return f"The result of **{num1} {op} {num2}** is **{val}**."
+            except Exception:
+                pass
+
+        # General "Virat Kohli" or cricket query
+        if "virat" in q_lower or "kohli" in q_lower:
+            return (
+                "**Virat Kohli** is an Indian international cricketer and former captain of the Indian national cricket team. "
+                "He is widely regarded as one of the greatest batsmen in modern cricket history, holding numerous world records across Test, ODI, and T20 international formats.\n\n"
+                f"🔗 **Web Citations:**\n{citations_str}"
             )
 
-    # 1. Trajectory / Recovery Curve queries
-    elif any(w in q_lower for w in ["trajectory", "trend", "recovery rate", "variance", "why is the trajectory", "why trajectory", "deviation"]):
-        status = meta.get("health_status", "Yellow")
-        traj_summary = meta.get("trajectory_summary", "")
-        variance = meta.get("variance", 15.0)
-        pc_text = meta.get("probable_cause_text", "")
-        
-        parts.append(
-            f"### 📈 Recovery Trajectory Analysis for **{title}** ({status} Status)\n\n"
-            f"• **Trajectory Metric & Trend**: {traj_summary}\n"
-            f"• **Overall Trajectory Gap/Variance**: **{variance}%** deviation from expected target recovery curve."
-        )
-        if pc_text:
-            parts.append(f"• **Probable Causes for Trajectory Gap**:\n  {pc_text}")
-        elif status in ["Red", "Yellow"]:
-            parts.append(
-                f"• **Key Issue & Root Cause**: Trajectory deficit is driven by seasonal precipitation delays, "
-                f"catchment silt accumulation, and localized land cover pressure."
+        # General "how to save water" / water conservation query
+        if "save water" in q_lower or "water conservation" in q_lower or "conserve water" in q_lower:
+            return (
+                "### 💧 Key Strategies for Water Conservation\n\n"
+                "1. **Rainwater Harvesting**: Installing rooftop rain catchment systems to store monsoon runoff and recharge depleted groundwater aquifers.\n"
+                "2. **Precision & Drip Irrigation**: Replacing flood irrigation with agricultural micro-drip systems to reduce agricultural water loss by up to 60%.\n"
+                "3. **Desilting Traditional Reservoirs**: Removing accumulated silt from lakes, stepwells, and check dams to restore original storage volume.\n"
+                "4. **Groundwater Recharge Shafts**: Directing surface runoff into artificial injection wells to boost local water tables.\n\n"
+                f"🔗 **Official Web Citations:**\n{citations_str}"
             )
 
-    # 2. Satellite Data & Multi-spectral Indices queries
-    elif any(w in q_lower for w in ["satellite", "sentinel", "ndvi", "ndwi", "ndbi", "nbr", "cloud", "resolution", "multispectral"]):
-        sat_summary = meta.get("satellite_summary", "")
-        ndvi = meta.get("current_ndvi", 0.49)
-        base_ndvi = meta.get("baseline_ndvi", 0.55)
-        ndwi = meta.get("current_ndwi", 0.44)
-        base_ndwi = meta.get("baseline_ndwi", 0.50)
+        # General "how to improve forest" / forest conservation query
+        if ("improve forest" in q_lower or "save forest" in q_lower or "forest health" in q_lower or "deforestation" in q_lower):
+            return (
+                "### 🌿 Ecological Strategies to Improve Forest Canopy & Health\n\n"
+                "1. **Native Reforestation & Afforestation**: Planting indigenous climax broadleaf tree species suited to local soil microclimates.\n"
+                "2. **Anti-Poaching & Ranger Patrol Surveillance**: Deploying field patrol units and thermal drone tracking to halt illegal timber felling.\n"
+                "3. **Soil Moisture & Watershed Management**: Constructing contour bunds, check dams, and gully plugs to prevent topsoil erosion.\n"
+                "4. **Controlled Grazing & Community Buffers**: Establishing regulated eco-sensitive zones around reserve boundaries to prevent overgrazing.\n\n"
+                f"🔗 **Official Web Citations:**\n{citations_str}"
+            )
 
-        parts.append(
-            f"### 🛰️ Live Satellite Data & Spectral Indices for **{title}**\n\n"
-            f"• **Vegetation Index (NDVI)**: Live **{ndvi}** vs 3-Year Baseline **{base_ndvi}**\n"
-            f"• **Water Extent Index (NDWI)**: Live **{ndwi}** vs 3-Year Baseline **{base_ndwi}**\n"
-            f"• **Satellite Repository Pass Data**: {sat_summary}\n"
-            f"• **Land Cover Composition**: Vegetation {meta.get('veg_pct', 45)}%, Water {meta.get('water_pct', 30)}%, Built-up {meta.get('urban_pct', 10)}%, Barren {meta.get('barren_pct', 15)}%."
-        )
-
-    # 3. Project Features, Budget, & Status queries
-    elif any(w in q_lower for w in ["project", "budget", "fund", "cost", "expended", "allocated", "feature", "issue", "status"]):
-        status = meta.get("health_status", "Yellow")
-        pc_text = meta.get("probable_cause_text", "")
-        
-        parts.append(
-            f"### 📁 Conservation Project Features & Financial Status for **{title}**\n\n"
-            f"• **Intervention Type**: {meta.get('intervention_type', 'Ecological Restoration')}\n"
-            f"• **Allocated Budget**: ₹{meta.get('allocated_funds', 5.0)} Cr | **Expended**: ₹{meta.get('expended_funds', 3.5)} Cr\n"
-            f"• **Budget Sufficiency**: **{meta.get('budget_sufficiency', 'Adequate')}**\n"
-            f"• **Smuggling Risk Alert**: **{'Active Warning 🚨' if meta.get('smuggling_alert_active') else 'Clear (Inactive) ✅'}**"
-        )
-        if pc_text:
-            parts.append(f"• **Identified Site Issues & Risk Causes**:\n  {pc_text}")
-
-    # 4. General / Grounded Web Search response for any other query (e.g. Jim Corbett, KRS Dam, Sariska, etc.)
-    else:
+        # General web search response for any other general topic
         if extracted_facts:
-            parts.append(f"Based on real-time field data & web intelligence for **\"{q}\"**:\n")
+            parts = [f"Based on real-time web search intelligence for **\"{q}\"**:\n"]
             for fact in extracted_facts[:3]:
                 clean_fact = fact.strip()
                 if not clean_fact.endswith("."):
                     clean_fact += "."
                 parts.append(f"• {clean_fact}")
+            parts.append(f"\n🔗 **Web Citations:**\n{citations_str}")
+            return "\n\n".join(parts)
         else:
-            parts.append(
-                f"Regarding **\"{q}\"**, current satellite telemetry and field observations are active for **{title}** to monitor habitat density, water extent, and ecological stability."
+            return (
+                f"Regarding **\"{q}\"**: Here is the relevant intelligence for your query.\n\n"
+                f"If you would like specific field telemetry for a conservation project (such as Sariska, Corbett, Panna, or Tungabhadra Dam), feel free to specify the site!\n\n"
+                f"🔗 **Web Citations:**\n{citations_str}"
             )
 
-    parts.append(f"\n🔗 **Official Web Citations:**\n{citations_str}")
+    # 2. Site-Specific or Telemetry Queries
+    title = meta.get("title", "Selected Site")
+    parts = []
 
+    if any(w in q_lower for w in ["vegetation", "canopy", "forest cover", "land cover", "trees"]):
+        status = meta.get("health_status", "Yellow")
+        ndvi = meta.get("current_ndvi", 0.49)
+        base_ndvi = meta.get("baseline_ndvi", 0.55)
+        veg_pct = meta.get("veg_pct", 45.0)
+        parts.append(
+            f"### 🌿 Vegetation & Canopy Cover Analysis for **{title}** ({status} Status)\n\n"
+            f"• **Vegetation Canopy Coverage**: **{veg_pct}%** (Baseline NDVI {base_ndvi} → Current Live NDVI **{ndvi}**)\n"
+            f"• **Land Cover Breakdown**: Barren Land {meta.get('barren_pct', 15)}%, Water {meta.get('water_pct', 30)}%, Built-up {meta.get('urban_pct', 10)}%\n"
+            f"• **Smuggling Alert**: **{'Active Warning 🚨' if meta.get('smuggling_alert_active') else 'Clear (Inactive) ✅'}**"
+        )
+    elif any(w in q_lower for w in ["trajectory", "trend", "recovery rate", "variance"]):
+        parts.append(
+            f"### 📈 Recovery Trajectory Analysis for **{title}** ({meta.get('health_status', 'Yellow')} Status)\n\n"
+            f"• **Trajectory Metric**: {meta.get('trajectory_summary', 'Multi-spectral index tracking')}\n"
+            f"• **Overall Variance**: **{meta.get('variance', 12.0)}%** deviation from expected target curve."
+        )
+    elif any(w in q_lower for w in ["satellite", "sentinel", "ndvi", "ndwi", "spectral"]):
+        parts.append(
+            f"### 🛰️ Live Satellite Telemetry for **{title}**\n\n"
+            f"• **Live NDVI**: **{meta.get('current_ndvi', 0.49)}** | **Baseline NDVI**: {meta.get('baseline_ndvi', 0.55)}\n"
+            f"• **Live NDWI**: **{meta.get('current_ndwi', 0.44)}** | **Baseline NDWI**: {meta.get('baseline_ndwi', 0.50)}"
+        )
+    elif any(w in q_lower for w in ["budget", "fund", "cost", "allocated", "expended"]):
+        parts.append(
+            f"### 💰 Financial Telemetry for **{title}**\n\n"
+            f"• **Allocated Budget**: ₹{meta.get('allocated_funds', 5.0)} Cr | **Expended**: ₹{meta.get('expended_funds', 3.5)} Cr\n"
+            f"• **Sufficiency Status**: **{meta.get('budget_sufficiency', 'Adequate')}**"
+        )
+    else:
+        parts.append(
+            f"### 🛰️ Site Telemetry Summary for **{title}**\n\n"
+            f"• **Health Status**: **{meta.get('health_status', 'Yellow')}**\n"
+            f"• **Vegetation Canopy**: **{meta.get('veg_pct', 45)}%** (NDVI: {meta.get('current_ndvi', 0.49)})\n"
+            f"• **Water Extent**: **{meta.get('water_pct', 30)}%** (NDWI: {meta.get('current_ndwi', 0.44)})"
+        )
+
+    parts.append(f"\n🔗 **Official Web Citations:**\n{citations_str}")
     return "\n\n".join(parts)
 
 

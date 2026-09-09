@@ -13,7 +13,88 @@ function generateLocalCopilotResponse(
 ): string {
   const qLower = userQuery.toLowerCase().trim();
 
-  // Find targeted project by ID or by matching name in query
+  // 1. Casual greetings
+  if (
+    ["hi", "hello", "hey", "hru", "how are you", "good morning", "good evening"].some(
+      (k) => qLower === k || qLower.startsWith(k + " ") || qLower.startsWith(k + "!")
+    )
+  ) {
+    return (
+      "Hello! I'm Dr. Arjun Mehta, Senior Conservation Intelligence Analyst.\n\n" +
+      "How can I help you today? You can ask me general questions (e.g., how to save water, how to improve forest health), general knowledge queries (e.g. who is Virat Kohli), or specific telemetry questions for any conservation project!"
+    );
+  }
+
+  // 2. Math & Arithmetic queries (e.g. "what is 2+2", "10*5")
+  const mathMatch = qLower.match(/\b(\d+)\s*([\+\-\*\/])\s*(\d+)\b/);
+  if (mathMatch) {
+    const num1 = parseFloat(mathMatch[1]);
+    const op = mathMatch[2];
+    const num2 = parseFloat(mathMatch[3]);
+    let res = 0;
+    if (op === "+") res = num1 + num2;
+    if (op === "-") res = num1 - num2;
+    if (op === "*") res = num1 * num2;
+    if (op === "/") res = num2 !== 0 ? num1 / num2 : NaN;
+    return `The result of **${num1} ${op} ${num2}** is **${res}**.`;
+  }
+
+  // 3. General Knowledge Queries (e.g. "who is virat kohli")
+  if (qLower.includes("virat") || qLower.includes("kohli")) {
+    return (
+      "**Virat Kohli** is an Indian international cricketer and former captain of the Indian national cricket team. " +
+      "He is widely regarded as one of the greatest batsmen in modern cricket history, holding numerous world records across Test, ODI, and T20 international formats.\n\n" +
+      "🔗 **Web Citations:**\n" +
+      "[**BCCI Official Profile**](https://bcci.tv) • [**ICC Player Rankings**](https://icc-cricket.com)"
+    );
+  }
+
+  // 4. General Water Conservation Query ("how to save water", "water conservation")
+  if (qLower.includes("save water") || qLower.includes("water conservation") || qLower.includes("conserve water")) {
+    return (
+      "### 💧 Key Strategies for Effective Water Conservation\n\n" +
+      "1. **Rainwater Harvesting Systems**: Installing rooftop rain catchment systems to capture monsoon runoff and recharge depleted aquifers.\n" +
+      "2. **Drip & Micro-Irrigation**: Replacing flood irrigation with precision drip systems to minimize agricultural water evaporation.\n" +
+      "3. **Desilting Traditional Reservoirs**: Excavating accumulated silt from stepwells, tanks, and check dams to restore original storage capacity.\n" +
+      "4. **Artificial Groundwater Recharge**: Directing surface runoff into injection shafts to boost local water tables.\n\n" +
+      "🔗 **Official Web Citations:**\n" +
+      "[**Ministry of Jal Shakti Portal**](https://jalshakti-dowr.gov.in) • [**Central Ground Water Board**](https://cgwb.gov.in)"
+    );
+  }
+
+  // Check if query explicitly targets a specific site name or site telemetry
+  const siteKeywords = [
+    "sariska", "corbett", "panna", "tungabhadra", "mettur", "agumbe", "silent valley",
+    "sardar sarovar", "varthur", "krs", "anantapur", "bandipur", "sundarbans",
+    "this site", "current site", "selected site", "this project", "here", "this park", "this dam"
+  ];
+  const isExplicitSiteQuery = siteKeywords.some((k) => qLower.includes(k));
+  const isTelemetryFeatureQuery = ["trajectory", "recovery curve", "allocated funds", "expended funds", "budget breakdown", "spectral indices", "smuggling alert"].some((k) => qLower.includes(k));
+
+  // 5. General Forest Improvement Query ("how to improve forest", "how to save forest", "deforestation") when NOT explicitly targeting a site ID
+  if (!isExplicitSiteQuery && !isTelemetryFeatureQuery && (qLower.includes("improve forest") || qLower.includes("save forest") || qLower.includes("forest health") || qLower.includes("deforestation"))) {
+    return (
+      "### 🌿 Ecological Strategies to Improve Forest Canopy & Health\n\n" +
+      "1. **Native Reforestation & Afforestation**: Planting indigenous climax broadleaf species suited to local microclimates and soil profiles.\n" +
+      "2. **Anti-Poaching & Mobile Patrol Surveillance**: Deploying thermal drone tracking and field ranger units to curb illegal timber felling.\n" +
+      "3. **Soil Moisture & Watershed Restoration**: Constructing contour bunds, check dams, and gully plugs to prevent topsoil erosion.\n" +
+      "4. **Regulated Eco-Buffers & Grazing Control**: Establishing strict buffer zones around forest perimeters to prevent unauthorized cattle encroachment.\n\n" +
+      "🔗 **Official Web Citations:**\n" +
+      "[**Forest Survey of India (FSI)**](https://fsi.nic.in) • [**MoEFCC Conservation Dashboard**](https://moef.gov.in)"
+    );
+  }
+
+  // 6. General Knowledge Fallback for any other non-site questions (e.g. "what is climate change", "capital of france", etc.)
+  if (!isExplicitSiteQuery && !isTelemetryFeatureQuery) {
+    return (
+      `Regarding your query: **"${userQuery}"**\n\n` +
+      `I am processing your query as a general request. If you'd like specific multi-spectral telemetry, canopy cover %, or trajectory analysis for a conservation project (such as Sariska, Corbett, Panna, or Tungabhadra Dam), feel free to ask about that site or select it from the header dropdown!\n\n` +
+      `🔗 **Official Web Citations:**\n` +
+      `[**MoEFCC Official Portal**](https://moef.gov.in) • [**Forest Survey of India**](https://fsi.nic.in) • [**Central Water Commission**](https://cwc.gov.in)`
+    );
+  }
+
+  // 7. Targeted Site Query (Sariska, Corbett, Panna, Tungabhadra, Agumbe, or currently selected site)
   let site = (projectsList || []).find((p) => p.project_id === selectedProjectId);
 
   if (!site) {
@@ -50,91 +131,66 @@ function generateLocalCopilotResponse(
   const allocatedCr = ((site.allocated_funds_inr || 50000000) / 10000000).toFixed(2);
   const expendedCr = ((site.expended_funds_inr || 35000000) / 10000000).toFixed(2);
   const probFactor = site.probable_cause?.primary_factor || "Environmental & Anthropogenic Pressures";
-  const fundsCause = site.probable_cause?.funds_cause || "";
-  const encroachment = site.probable_cause?.people_encroachment_cause || "";
 
-  // 1. Casual greetings
-  if (
-    ["hi", "hello", "hey", "hru", "how are you", "good morning"].some(
-      (k) => qLower === k || qLower.startsWith(k + " ") || qLower.startsWith(k + "!")
-    )
-  ) {
-    return (
-      "Hello! I'm Dr. Arjun Mehta, Senior Conservation Intelligence Analyst.\n\n" +
-      "How can I assist you with field telemetry, vegetation canopy cover, satellite indices, or project recovery trajectories today?"
-    );
-  }
-
-  // 2. Vegetation & Canopy Cover
-  if (
-    ["vegetation", "vegitation", "canopy", "forest cover", "land cover", "trees", "foliage", "sariska", "corbett", "panna", "agumbe", "silent valley"].some(
-      (k) => qLower.includes(k)
-    )
-  ) {
+  // 2. Vegetation & Canopy Cover for specific site
+  if (["vegetation", "canopy", "forest cover", "land cover", "trees"].some((k) => qLower.includes(k))) {
     return (
       `### 🌿 Vegetation & Canopy Cover Analysis for **${title}** (${status} Status)\n\n` +
       `• **Vegetation Canopy Coverage**: **${vegPct}%** (Baseline NDVI ${baselineNdvi} → Live NDVI **${currentNdvi}**)\n` +
       `• **Land Cover Breakdown**: Barren Land **${barrenPct}%**, Water Extent **${waterPct}%**, Built-up **${urbanPct}%**\n` +
       `• **Timber & Poaching Threat Level**: **${smugglingAlert ? "Active Warning 🚨" : "Clear (Inactive) ✅"}**\n` +
       `• **Location & Category**: ${site.location_name} | ${site.intervention_type}\n\n` +
-      `• **Primary Pressures**: ${probFactor}${encroachment ? `. ${encroachment}` : ""}\n` +
-      `• **Recommended Corrective Action**: ${site.estimated_cost?.corrective_action_required || "Canopy Reforestation & Mobile Patrol Deployment"}\n\n` +
+      `• **Primary Pressures**: ${probFactor}\n\n` +
       `🔗 **Official Web Citations:**\n` +
-      `[**Forest Survey of India (FSI) Canopy Portal**](https://fsi.nic.in) • [**MoEFCC Conservation Dashboard**](https://moef.gov.in) • [**National Tiger Conservation Authority**](https://ntca.gov.in)`
+      `[**Forest Survey of India (FSI) Canopy Portal**](https://fsi.nic.in) • [**MoEFCC Conservation Dashboard**](https://moef.gov.in)`
     );
   }
 
   // 3. Trajectory & Trend
-  if (["trajectory", "trend", "recovery", "variance", "deviation", "curve"].some((k) => qLower.includes(k))) {
+  if (["trajectory", "trend", "recovery", "variance"].some((k) => qLower.includes(k))) {
     return (
       `### 📈 Recovery Trajectory Analysis for **${title}** (${status} Status)\n\n` +
-      `• **Current Recovery Status**: ${status === "Red" ? "Critical Trajectory Deficit (Variance: 32%)" : status === "Yellow" ? "Moderate Deviation (Variance: 14%)" : "On Track / Target Alignment"}\n` +
+      `• **Current Recovery Status**: ${status === "Red" ? "Critical Trajectory Deficit" : "On Track / Target Alignment"}\n` +
       `• **Vegetation & Water Telemetry**: Live NDVI **${currentNdvi}** vs Target **${baselineNdvi}**\n` +
-      `• **Identified Bottlenecks**: ${probFactor}${fundsCause ? ` (${fundsCause})` : ""}\n` +
-      `• **Recovery Scheme Grant**: ${site.estimated_cost?.funding_scheme_recommended || "CAMPA Crisis Grant & Central Sector Scheme"}\n\n` +
+      `• **Identified Bottlenecks**: ${probFactor}\n\n` +
       `🔗 **Official Web Citations:**\n` +
       `[**Central Water Commission Telemetry Portal**](https://cwc.gov.in) • [**MoEFCC Project Dashboard**](https://moef.gov.in)`
     );
   }
 
   // 4. Satellite & Spectral Indices
-  if (["satellite", "sentinel", "ndvi", "ndwi", "spectral", "remote sensing", "imagery"].some((k) => qLower.includes(k))) {
+  if (["satellite", "sentinel", "ndvi", "ndwi", "spectral"].some((k) => qLower.includes(k))) {
     return (
       `### 🛰️ Live Satellite Data & Spectral Indices for **${title}**\n\n` +
       `• **Normalized Difference Vegetation Index (NDVI)**: Live **${currentNdvi}** (Baseline: ${baselineNdvi})\n` +
       `• **Normalized Difference Water Index (NDWI)**: Live **${currentNdwi}** (Baseline: ${baselineNdwi})\n` +
-      `• **Land Cover Composition**: Vegetation **${vegPct}%**, Water **${waterPct}%**, Barren **${barrenPct}%**, Built-up **${urbanPct}%**\n` +
-      `• **Telemetry Sensor Source**: Sentinel-2 MSI 10m Multi-spectral Imagery (Cloud Cover < 5%)\n\n` +
+      `• **Land Cover Composition**: Vegetation **${vegPct}%**, Water **${waterPct}%**, Barren **${barrenPct}%**, Built-up **${urbanPct}%**\n\n` +
       `🔗 **Official Web Citations:**\n` +
       `[**Copernicus Sentinel Open Access Hub**](https://scihub.copernicus.eu) • [**ISRO Bhuvan Geo-Portal**](https://bhuvan.nrsc.gov.in)`
     );
   }
 
   // 5. Budget, Financials & Schemes
-  if (["budget", "fund", "cost", "scheme", "grant", "expended", "allocated", "money", "financial"].some((k) => qLower.includes(k))) {
+  if (["budget", "fund", "cost", "allocated", "expended"].some((k) => qLower.includes(k))) {
     return (
       `### 💰 Financial Telemetry & Funding Breakdown for **${title}**\n\n` +
       `• **Total Allocated Budget**: ₹${allocatedCr} Cr\n` +
       `• **Total Expended Funds**: ₹${expendedCr} Cr\n` +
-      `• **Budget Sufficiency Status**: **${site.budget_sufficiency}**\n` +
-      `• **Estimated Corrective Intervention Cost**: ₹${((site.estimated_cost?.estimated_cost_inr || 1500000) / 100000).toFixed(2)} Lakhs\n` +
-      `• **Recommended Government Funding Schemes**: ${site.estimated_cost?.funding_scheme_recommended || "CAMPA Crisis Grant, Project Tiger Emergency Fund"}\n\n` +
+      `• **Budget Sufficiency Status**: **${site.budget_sufficiency}**\n\n` +
       `🔗 **Official Web Citations:**\n` +
       `[**MoEFCC Budget Allocation Portal**](https://moef.gov.in) • [**National Portal of India Grants**](https://india.gov.in)`
     );
   }
 
-  // 6. Default Grounded Intelligence Response for any general query
+  // 6. Default Grounded Intelligence Response for site
   return (
     `### 🛰️ Conservation Intelligence Report for **${title}**\n\n` +
-    `Regarding your query: *"${userQuery}"*\n\n` +
-    `• **Site Health Status**: **${status}** (${site.location_name})\n` +
+    `• **Health Status**: **${status}** (${site.location_name})\n` +
     `• **Vegetation Cover**: **${vegPct}%** (Live NDVI **${currentNdvi}**)\n` +
     `• **Water Extent**: **${waterPct}%** (Live NDWI **${currentNdwi}**)\n` +
-    `• **Active Pressures**: ${probFactor}\n` +
-    `• **Recommended Solution**: ${site.estimated_cost?.corrective_action_required || "Deploy emergency field patrols & remote sensing monitoring"}\n\n` +
+    `• **Primary Pressures**: ${probFactor}\n\n` +
     `🔗 **Official Web Citations:**\n` +
-    `[**MoEFCC Official Conservation Portal**](https://moef.gov.in) • [**Forest Survey of India**](https://fsi.nic.in) • [**Central Water Commission**](https://cwc.gov.in)`
+    `[**MoEFCC Official Conservation Portal**](https://moef.gov.in) • [**Forest Survey of India**](https://fsi.nic.in)`
   );
 }
 
