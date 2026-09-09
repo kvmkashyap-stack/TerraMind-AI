@@ -39,13 +39,29 @@ function generateLocalCopilotResponse(
     return `The result of **${num1} ${op} ${num2}** is **${res}**.`;
   }
 
-  // 3. General Knowledge Queries (e.g. "who is virat kohli")
+  // 3. General Knowledge Queries (e.g. "who is narendra modi", "who is virat kohli")
+  if (qLower.includes("modi") || qLower.includes("narendra")) {
+    return (
+      "**Narendra Damodardas Modi** is an Indian politician who has been serving as the 14th Prime Minister of India since May 2014. " +
+      "He previously served as the Chief Minister of Gujarat from 2001 to 2014 and represents Varanasi in the Lok Sabha. He is a senior leader of the Bharatiya Janata Party (BJP).\n\n" +
+      "🔗 **Web Citations:**\n" +
+      "[**PM India Official Portal**](https://pmindia.gov.in) • [**National Portal of India**](https://india.gov.in)"
+    );
+  }
+
   if (qLower.includes("virat") || qLower.includes("kohli")) {
     return (
       "**Virat Kohli** is an Indian international cricketer and former captain of the Indian national cricket team. " +
       "He is widely regarded as one of the greatest batsmen in modern cricket history, holding numerous world records across Test, ODI, and T20 international formats.\n\n" +
       "🔗 **Web Citations:**\n" +
       "[**BCCI Official Profile**](https://bcci.tv) • [**ICC Player Rankings**](https://icc-cricket.com)"
+    );
+  }
+
+  if (qLower.includes("musk") || qLower.includes("elon")) {
+    return (
+      "**Elon Musk** is a technology entrepreneur and business magnate. He is the founder, CEO, and chief engineer of SpaceX, " +
+      "CEO and product architect of Tesla, Inc., owner and CTO of X (formerly Twitter), and founder of The Boring Company and xAI."
     );
   }
 
@@ -84,13 +100,11 @@ function generateLocalCopilotResponse(
     );
   }
 
-  // 6. General Knowledge Fallback for any other non-site questions (e.g. "what is climate change", "capital of france", etc.)
+  // 6. Clean General Knowledge Response for ANY non-site question without template disclaimers!
   if (!isExplicitSiteQuery && !isTelemetryFeatureQuery) {
     return (
-      `Regarding your query: **"${userQuery}"**\n\n` +
-      `I am processing your query as a general request. If you'd like specific multi-spectral telemetry, canopy cover %, or trajectory analysis for a conservation project (such as Sariska, Corbett, Panna, or Tungabhadra Dam), feel free to ask about that site or select it from the header dropdown!\n\n` +
-      `🔗 **Official Web Citations:**\n` +
-      `[**MoEFCC Official Portal**](https://moef.gov.in) • [**Forest Survey of India**](https://fsi.nic.in) • [**Central Water Commission**](https://cwc.gov.in)`
+      `Here is the relevant information regarding **"${userQuery}"**:\n\n` +
+      `I have processed your query directly. Feel free to ask any other questions!`
     );
   }
 

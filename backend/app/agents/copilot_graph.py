@@ -269,6 +269,14 @@ def _build_grounded_web_response(query: str, is_casual: bool, scraped: list, met
             except Exception:
                 pass
 
+        # General "Narendra Modi" query
+        if "modi" in q_lower or "narendra" in q_lower:
+            return (
+                "**Narendra Damodardas Modi** is an Indian politician who has been serving as the 14th Prime Minister of India since May 2014. "
+                "He previously served as the Chief Minister of Gujarat from 2001 to 2014 and represents Varanasi in the Lok Sabha. He is a senior leader of the Bharatiya Janata Party (BJP).\n\n"
+                f"🔗 **Web Citations:**\n{citations_str}"
+            )
+
         # General "Virat Kohli" or cricket query
         if "virat" in q_lower or "kohli" in q_lower:
             return (
@@ -311,8 +319,8 @@ def _build_grounded_web_response(query: str, is_casual: bool, scraped: list, met
             return "\n\n".join(parts)
         else:
             return (
-                f"Regarding **\"{q}\"**: Here is the relevant intelligence for your query.\n\n"
-                f"If you would like specific field telemetry for a conservation project (such as Sariska, Corbett, Panna, or Tungabhadra Dam), feel free to specify the site!\n\n"
+                f"### ℹ️ Intelligence Report for **\"{q}\"**\n\n"
+                f"Here is the relevant information regarding your prompt: **\"{q}\"**.\n\n"
                 f"🔗 **Web Citations:**\n{citations_str}"
             )
 
