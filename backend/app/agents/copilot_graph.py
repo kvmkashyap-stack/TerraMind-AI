@@ -48,19 +48,36 @@ def is_casual_query(query: str) -> bool:
     return False
 
 def is_site_specific_query(query: str) -> bool:
-    """Returns True if the query is asking about site telemetry, status, funds, trajectory, etc."""
+    """Returns True if the query is asking about site telemetry, status, funds, trajectory, or measures."""
     q = query.lower()
     site_kws = [
+        # Telemetry & indices
         "trajectory", "recovery curve", "health status", "why red", "why yellow", "why green",
         "status", "satellite", "ndvi", "ndwi", "ndbi", "nbr", "ndmi", "spectral",
         "sentinel", "satellite data", "satellite image", "land cover", "vegetation cover",
-        "canopy", "fund", "budget", "allocated", "expended", "scheme", "grant",
+        "canopy", "vegetation", "forest cover", "tree cover",
+        # Finance
+        "fund", "budget", "allocated", "expended", "scheme", "grant", "cost",
+        "spending", "financial", "utilization", "crore",
+        # Threats & alerts
         "smuggling", "encroachment", "poaching", "impact score", "dric", "variance",
+        "alert", "threat", "illegal",
+        # Action/measure/deeper questions
+        "measures", "remediation", "how to fix", "how to improve", "how to restore",
+        "what should", "what to do", "recommendations", "corrective", "intervention",
+        "action plan", "steps to", "solution", "what can be done", "next steps",
+        "how can we", "restoration plan", "fix this", "improve this",
+        # Context references
         "this site", "current site", "selected site", "this project", "this dam",
-        "this forest", "this park", "this reserve", "this lake",
-        "sariska", "corbett", "panna", "tungabhadra", "mettur", "agumbe",
-        "silent valley", "sardar sarovar", "varthur", "krs", "anantapur",
-        "bandipur", "sundarbans", "probable cause", "primary factor"
+        "this forest", "this park", "this reserve", "this lake", "here",
+        "probable cause", "primary factor", "why is",
+        # All site names
+        "sariska", "corbett", "jim corbett", "panna", "tungabhadra", "mettur", "stanley",
+        "agumbe", "silent valley", "sardar sarovar", "varthur", "krs", "krishnarajasagara",
+        "anantapur", "bandipur", "sundarbans", "chilika", "loktak", "vembanad",
+        "kaziranga", "gir", "nagarjuna", "bhakra", "nangal", "alwar", "latur",
+        "aravalli", "wular", "similipal", "wayanad", "mudumalai", "ranthambore",
+        "idukki", "koyna", "pichola", "dal lake", "bhojtal", "hebbal",
     ]
     return any(kw in q for kw in site_kws)
 
@@ -183,11 +200,11 @@ Health Status: {health}  ← Use this to explain why the site is Red/Yellow/Gree
 
 Financial Data:
   - Allocated Budget: ₹{alloc} Crore
-  - Expended Funds: ₹{expend} Crore
+  - Expended Funds: ₹{expend} Crore ({meta.get('fund_utilization_pct', 0)}% utilized)
   - Budget Sufficiency: {sufficiency}
 
 Spectral Indices (Live Satellite Telemetry):
-  - NDVI (Vegetation): Baseline {b_ndvi} → Current {c_ndvi}  ({'+' if c_ndvi >= b_ndvi else ''}{round((c_ndvi - b_ndvi) / b_ndvi * 100, 1) if b_ndvi else 0}%)
+  - NDVI (Vegetation): Baseline {b_ndvi} → Current {c_ndvi}  ({'+' if c_ndvi >= b_ndvi else ''}{round((c_ndvi - b_ndvi) / b_ndvi * 100, 1) if b_ndvi else 0}% change)
   - NDWI (Water): Baseline {b_ndwi} → Current {c_ndwi}
   - NDBI (Built-up): {c_ndbi}
   - NBR (Burn Ratio): {c_nbr}
@@ -203,12 +220,17 @@ Land Cover Composition:
 
 Smuggling / Encroachment Alert: {'ACTIVE 🚨' if smuggling else 'Inactive ✅'}
 Probable Cause: {pc_text if pc_text else 'N/A'}
+Trajectory Performance: {meta.get('trajectory_performance', 'Unknown')}
 
 Recovery Trajectory:
 {traj_summary if traj_summary else 'N/A'}
 
 Satellite Observation Summary:
 {sat_summary if sat_summary else 'Sentinel-2 MSI & Sentinel-1 SAR imagery active'}
+
+Corrective Action Required: {meta.get('corrective_action', 'To be assessed')}
+Estimated Corrective Cost: {meta.get('corrective_cost', 'To be assessed')}
+Recommended Funding Scheme: {meta.get('funding_scheme_recommended', 'CAMPA / Green India Mission')}
 ========================================================
 """
 
@@ -462,6 +484,48 @@ def _build_grounded_web_response(
                 f"• **Smuggling / Timber Threat**: {'🚨 Active Alert' if smuggling else '✅ Clear'}\n"
                 f"• **Primary Pressures**: {pc if pc else 'Environmental & anthropogenic pressures'}\n\n"
                 f"🔗 **Official Citations:**\n{citations_str}"
+            )
+
+        if any(kw in q_lower for kw in [
+            "measures", "remediation", "how to fix", "how to improve", "how to restore",
+            "what should", "what to do", "recommendations", "corrective", "intervention",
+            "action plan", "steps", "solution", "what can be done", "next steps",
+            "how can we", "restoration plan", "fix", "improve"
+        ]):
+            corrective = meta.get("corrective_action", "")
+            corr_cost = meta.get("corrective_cost", "")
+            funding_scheme = meta.get("funding_scheme_recommended", "")
+            ndvi_delta = meta.get("ndvi_delta_pct", 0)
+            traj_perf = meta.get("trajectory_performance", "Unknown")
+
+            # Build status-specific primary recommendation
+            if health == "Red":
+                priority = "🔴 **Critical Intervention Required**"
+                urgency_note = f"The site has declined **{abs(ndvi_delta)}%** from its baseline — immediate field intervention is essential."
+            elif health == "Yellow":
+                priority = "🟡 **Moderate Intervention Needed**"
+                urgency_note = f"The site shows **{abs(ndvi_delta)}%** deviation from baseline — targeted corrective actions are recommended."
+            else:
+                priority = "🟢 **Maintenance Mode**"
+                urgency_note = "The site is performing within acceptable parameters. Continue current monitoring and maintenance."
+
+            return (
+                f"### 🔧 Corrective Action Plan for **{title}**\n\n"
+                f"{priority}\n"
+                f"{urgency_note}\n\n"
+                f"**Root Cause Summary:**\n"
+                f"• {pc if pc else 'Environmental & anthropogenic pressures'}\n"
+                f"• Trajectory Performance: **{traj_perf}** | Variance from target: **{variance}%**\n"
+                f"• Smuggling/Encroachment: {'🚨 **Active** — ranger patrol enforcement needed' if smuggling else '✅ Inactive'}\n\n"
+                f"**Recommended Corrective Measures:**\n"
+                f"• {corrective if corrective else 'Implement habitat restoration, native replanting, and water body desilting.'}\n"
+                f"• Deploy satellite-guided field monitoring using NDVI/NDWI change detection alerts.\n"
+                f"• Strengthen eco-sensitive zone (ESZ) regulations and community watch programs.\n"
+                f"• Coordinate with MoEFCC and State Forest Dept for emergency CAMPA fund release.\n\n"
+                f"**Estimated Corrective Cost:** {corr_cost if corr_cost else 'To be assessed by field teams'}\n"
+                f"**Recommended Funding Scheme:** {funding_scheme if funding_scheme else 'CAMPA, Green India Mission, or Jal Shakti Abhiyan (depending on site type)'}\n\n"
+                f"🔗 **Official Citations:**\n"
+                f"[**MoEFCC Restoration Portal**](https://moef.gov.in) • [**CAMPA Fund Guidelines**](https://campa.gov.in) • [**FSI Monitoring Dashboard**](https://fsi.nic.in)"
             )
 
         # Default site summary
